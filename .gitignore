@@ -1,0 +1,11 @@
+# 忽略權重模型檔
+*.bin.gz
+
+# 忽略 KataGo 執行檔
+katago
+katago.exe
+
+# 忽略 Python 快取與系統雜物
+__pycache__/
+.DS_Store
+*.pyc

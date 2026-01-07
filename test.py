@@ -23,7 +23,7 @@ class KataGoTester:
         )
         self.logos = LogosEngine()
 
-    def run_test(self, file_path, start_step=1, end_step=None):
+    def run_test(self, file_path, start_step=20, end_step=30):
         """
         start_step: 從第幾手開始 (1-based)
         end_step: 到第幾手結束
@@ -101,7 +101,7 @@ class KataGoTester:
                     }
 
                     commentary = self.logos.generate_commentary(analysis_data)
-                    print(f"\n第 {i+1} 手 [{color}]: 勝率 {curr_wr:.1%} | 目數差 {curr_score:+.1f}")
+                    print(f"\n第 {i+1} 手 [{color}]: 黑方勝率 {curr_wr:.1%} | 目數差 {curr_score:+.1f}")
                     print(f"🐶 老狗：{commentary}\n")
 
                     last_wr, last_score = curr_wr, curr_score
@@ -134,5 +134,5 @@ if __name__ == "__main__":
     )
     
     # --- 💡 在這裡設定你想看的手數範圍 ---
-    # 例如想看第 50 手到第 60 手：
-    tester.run_test(os.path.join(base_path, "game-1.sgf"), start_step=50, end_step=60)
+    # 例如想看第 20 手到第 30 手：
+    tester.run_test(os.path.join(base_path, "game-2.sgf"), start_step=20, end_step=30)

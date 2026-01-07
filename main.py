@@ -9,6 +9,8 @@ import sys
 # 引入你的 SGF 工具
 from sgf_utils import get_moves_from_sgf
 
+from logos_engine import LogosEngine
+
 # === 在這裡加入字體設定 ===
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS'] 
 plt.rcParams['axes.unicode_minus'] = False

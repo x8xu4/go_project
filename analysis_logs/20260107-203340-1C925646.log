@@ -1,0 +1,34 @@
+2026-01-07 20:33:40+0800: Running with following config:
+logDir = analysis_logs
+maxVisits = 500
+nnCacheSizePowerOfTwo = 23
+nnMaxBatchSize = 64
+nnMutexPoolSizePowerOfTwo = 17
+nnRandomize = true
+numAnalysisThreads = 8
+numSearchThreads = 16
+reportAnalysisWinratesAs = BLACK
+
+2026-01-07 20:33:40+0800: Analysis Engine starting...
+2026-01-07 20:33:40+0800: KataGo v1.16.4
+2026-01-07 20:33:40+0800: nnRandSeed0 = 13394810842132141268
+2026-01-07 20:33:40+0800: After dedups: nnModelFile0 = /Users/ouo1010/Desktop/go_project/model.bin.gz useFP16 auto useNHWC auto
+2026-01-07 20:33:40+0800: Initializing neural net buffer to be size 19 * 19 allowing smaller boards
+2026-01-07 20:33:42+0800: Note: nnMaxBatchSize * number of GPUs (64) is smaller than numSearchThreads * numAnalysisThreads (128)
+2026-01-07 20:33:42+0800: The number of simultaneous threads that might query the GPU could be larger than the batch size that the GPU will handle at once.
+2026-01-07 20:33:42+0800: It may improve performance to increase nnMaxBatchSize, unless you are constrained on GPU memory.
+2026-01-07 20:33:42+0800: Loaded config /Users/ouo1010/Desktop/go_project/analysis.cfg
+2026-01-07 20:33:42+0800: Loaded model /Users/ouo1010/Desktop/go_project/model.bin.gz
+2026-01-07 20:33:42+0800: Analyzing up to 8 positions at a time in parallel
+2026-01-07 20:33:42+0800: Started, ready to begin handling requests
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_20"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_21"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_22"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_23"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_24"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_25"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_26"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_27"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_28"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_29"}
+2026-01-07 20:33:42+0800: Error: {"error":"Must be an array of pairs of the form: [\"b\" or \"w\", GTP board vertex]","field":"moves","id":"step_30"}

@@ -71,8 +71,10 @@ class KataGoTester:
                         "id": f"test_{i}",
                         "moves": current_history,
                         "rules": "chinese",
+                        "komi":0.5,
                         "boardXSize": 19, "boardYSize": 19,
-                        "includeOwnership": True
+                        "includeOwnership": True,
+                        "maxVisits":1000
                     }
 
                     print(f"正在分析第 {i+1} 手 ({color} {c_str})...", end="\r")

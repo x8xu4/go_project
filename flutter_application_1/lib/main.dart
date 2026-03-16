@@ -66,7 +66,12 @@ class _GoBoardPageState extends State<GoBoardPage> {
       String sgfContent;
 
       if (file.bytes != null) {
-        sgfContent = utf8.decode(file.bytes!);
+        try {
+          sgfContent = utf8.decode(file.bytes!);
+        } catch (_) {
+          // UTF-8 失敗，改用 latin1 解碼（相容 GB2312/GBK 檔案）
+          sgfContent = latin1.decode(file.bytes!);
+        }
       } else if (file.path != null) {
         sgfContent = await File(file.path!).readAsString();
       } else {
@@ -99,28 +104,45 @@ class _GoBoardPageState extends State<GoBoardPage> {
 
   // ★ 本地 SGF 解析：把棋譜一步步重建成 _history
   void _parseSGFLocally(String sgf) {
-    // 提取 B[] 和 W[] 的座標
-    final moveRegex = RegExp(r';([BW])\[([a-s]{0,2})\]');
-    final matches = moveRegex.allMatches(sgf);
-
     Map<String, StoneInfo> currentStones = {};
     List<Map<String, StoneInfo>> newHistory = [];
-    bool isBlack = true;
     int moveNum = 0;
+    String lastCoord = '';
+
+    final moveRegex = RegExp(r'\(;([BW])\[([a-s]{0,2})\]');
+
+    // 單獨抓第一手（格式是 ;B[ 不是 (;B[）
+    final firstMoveRegex = RegExp(r';([BW])\[([a-s]{2})\]');
+    final firstMatch = firstMoveRegex.firstMatch(sgf);
+
+    // 把第一手位置記下來，之後間距從這裡算
+    int lastPos = firstMatch?.start ?? 0;
+
+    // 先處理第一手
+    final List<RegExpMatch> allMatches = [];
+    if (firstMatch != null) allMatches.add(firstMatch);
+
+    // 再加上後面 (;B[ 格式的落子，但要排除跟第一手重複的
+    for (final m in moveRegex.allMatches(sgf)) {
+      if (m.start > lastPos) allMatches.add(m);
+    }
+
+    final matches = allMatches;
 
     for (final match in matches) {
       final colorChar = match.group(1)!;
       final coord = match.group(2)!;
 
-      // 空手（pass）跳過
-      if (coord.isEmpty) {
-        moveNum++;
-        isBlack = !isBlack;
-        newHistory.add(Map.from(currentStones));
-        continue;
-      }
+      // ★ 間距超過 50 代表進入變化圖注釋區，停止解析
+      if (lastPos != 0 && (match.start - lastPos) > 50) break;
+      lastPos = match.start;
 
-      // SGF 座標轉棋盤座標：a=0, b=1, ... s=18
+      // ★ 同座標連續出現代表進入變化圖，停止
+      if (newHistory.isNotEmpty && coord == lastCoord) break;
+      lastCoord = coord;
+
+      if (coord.isEmpty || coord.length < 2) continue; // pass
+
       int x = coord.codeUnitAt(0) - 'a'.codeUnitAt(0);
       int y = coord.codeUnitAt(1) - 'a'.codeUnitAt(0);
 
@@ -130,10 +152,10 @@ class _GoBoardPageState extends State<GoBoardPage> {
       Color opp = colorChar == 'B' ? Colors.white : Colors.black;
 
       String key = "$x,$y";
+      if (moveNum >= 203) debugPrint("第${moveNum+1}手: $colorChar[$coord] 位置${match.start}");
       moveNum++;
       currentStones[key] = StoneInfo(mine, moveNum);
 
-      // 提子
       for (var d in _directions) {
         int nx = x + d[0], ny = y + d[1];
         if (nx < 0 || nx >= 19 || ny < 0 || ny >= 19) continue;
@@ -146,8 +168,9 @@ class _GoBoardPageState extends State<GoBoardPage> {
       }
 
       newHistory.add(Map.from(currentStones));
-      isBlack = colorChar == 'W'; // 下一手
     }
+
+    debugPrint("解析手數: ${newHistory.length}");
 
     setState(() {
       _history.clear();

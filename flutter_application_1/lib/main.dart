@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +39,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
   bool _isBlack = true;
   bool _showMoveNumbers = false;
   int _currentMoveCount = 0;
+  final FocusNode _focusNode = FocusNode();
 
   // ★ 修正落子偏移：用 GlobalKey 取得棋盤的真實位置
   final GlobalKey _boardKey = GlobalKey();
@@ -48,6 +50,13 @@ class _GoBoardPageState extends State<GoBoardPage> {
     [1, 0],
     [-1, 0]
   ];
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _jumpController.dispose();
+    super.dispose();
+  }
 
   // --- 1. SGF 匯入（本地解析，不依賴後端）---
   Future<void> _importSGF() async {
@@ -340,7 +349,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
     // 轉換為棋盤內的本地座標
     Offset localPos = renderBox.globalToLocal(details.globalPosition);
 
-    const double boardSize = 650.0;
+    final double boardSize = renderBox.size.width;
     double padding = boardSize * 0.06;
     double step = (boardSize - padding * 2) / 18;
 
@@ -385,7 +394,19 @@ class _GoBoardPageState extends State<GoBoardPage> {
   // --- 4. UI 構建 ---
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KeyboardListener(
+  focusNode: _focusNode,
+  autofocus: true,
+  onKeyEvent: (event) {
+    if (event is KeyDownEvent || event is KeyRepeatEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        _jumpToMove(_currentMoveCount - 1);
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        _jumpToMove(_currentMoveCount + 1);
+      }
+    }
+  },
+  child:Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
         title: const Text("LogosGo",
@@ -497,11 +518,19 @@ class _GoBoardPageState extends State<GoBoardPage> {
           ),
         ],
       ),
+      ),
     );
   }
 
   // --- 棋盤組件（使用 GlobalKey + 固定 650 大小）---
   Widget _buildGoBoard() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 取寬高較小的那邊，確保棋盤是正方形且不超出範圍
+        double boardSize = (constraints.maxWidth < constraints.maxHeight
+                ? constraints.maxWidth
+                : constraints.maxHeight) -
+            16;
     return Center(
       child: Container(
         padding: const EdgeInsets.all(8.0),
@@ -518,7 +547,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
           onTapUp: _handleTap,
           child: CustomPaint(
             key: _boardKey, // ★ 綁定 GlobalKey
-            size: const Size(650, 650),
+            size: Size(boardSize, boardSize),
             painter: GoBoardPainter(
               stones: _stones,
               lastMoveIndex: _currentMoveCount,
@@ -527,6 +556,8 @@ class _GoBoardPageState extends State<GoBoardPage> {
           ),
         ),
       ),
+      );
+      },
     );
   }
 

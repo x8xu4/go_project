@@ -40,6 +40,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
   bool _showMoveNumbers = false;
   int _currentMoveCount = 0;
   final FocusNode _focusNode = FocusNode();
+  bool _showBlackWinrate = true; // true = 黑棋勝率，false = 白棋勝率
 
   // ★ 修正落子偏移：用 GlobalKey 取得棋盤的真實位置
   final GlobalKey _boardKey = GlobalKey();
@@ -98,9 +99,6 @@ class _GoBoardPageState extends State<GoBoardPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("棋譜載入完成！")),
       );
-
-      // 嘗試連後端分析（失敗也不影響棋譜顯示）
-      _tryServerAnalysis(sgfContent);
     } catch (e) {
       debugPrint("載入失敗: $e");
       if (mounted) {
@@ -112,7 +110,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
   }
 
   // ★ 本地 SGF 解析：把棋譜一步步重建成 _history
-  void _parseSGFLocally(String sgf) {
+  Future <void> _parseSGFLocally(String sgf) async {
     Map<String, StoneInfo> currentStones = {};
     List<Map<String, StoneInfo>> newHistory = [];
     int moveNum = 0;
@@ -143,11 +141,24 @@ class _GoBoardPageState extends State<GoBoardPage> {
       final coord = match.group(2)!;
 
       // ★ 間距超過 50 代表進入變化圖注釋區，停止解析
-      if (lastPos != 0 && (match.start - lastPos) > 50) break;
+      if (lastPos != 0 && (match.start - lastPos) > 200){
+      debugPrint("間距中斷在第${moveNum+1}手，間距${match.start - lastPos}，座標$coord");
+      break;
+      } 
       lastPos = match.start;
 
+      bool expectedBlack = (moveNum % 2 == 0);
+      bool isBlackMove = colorChar == 'B';
+if (moveNum > 0 && expectedBlack != isBlackMove) {
+  debugPrint("顏色不交替中斷：第${moveNum+1}手 應該${expectedBlack ? '黑' : '白'}但是$colorChar");
+  break;
+}
+
       // ★ 同座標連續出現代表進入變化圖，停止
-      if (newHistory.isNotEmpty && coord == lastCoord) break;
+      if (newHistory.isNotEmpty && coord == lastCoord){
+      debugPrint("重複座標中斷在第${moveNum+1}手，座標$coord");
+      break;
+      } 
       lastCoord = coord;
 
       if (coord.isEmpty || coord.length < 2) continue; // pass
@@ -192,32 +203,42 @@ class _GoBoardPageState extends State<GoBoardPage> {
       }
       _isBlack = (_currentMoveCount % 2 == 0);
       _lastBoardState = null;
+      // ★ 先用平線填滿，後端回來後再更新
+      _winrateSpots = List.generate(newHistory.length, (i) {
+        return FlSpot(i.toDouble(), 0.5);
+      });
+    });
+    await _tryServerAnalysis(sgf);
+  }
+
+  Future<void> _tryServerAnalysis(String sgfContent) async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5001/analyze_sgf'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"sgf_content": sgfContent}),
+    ).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        List<dynamic> wrList = data['winrates'];
+        _winrateSpots = wrList.asMap().entries.map((e) {
+          return FlSpot(e.key.toDouble(), e.value);
+        }).toList();
+        _blunderMoves = List<int>.from(data['blunders']);
+      });
+      _fetchLogosCommentary(_currentMoveCount);
+    }
+  } catch (_) {
+  debugPrint("產生勝率點數: ${_history.length}");
+    setState(() {
+      _winrateSpots = List.generate(_history.length, (i) {
+        return FlSpot(i.toDouble(), 0.5);
+      });
     });
   }
-
-  // 嘗試後端分析（失敗靜默處理）
-  Future<void> _tryServerAnalysis(String sgfContent) async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:5001/analyze_sgf'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"sgf_content": sgfContent}),
-      ).timeout(const Duration(seconds: 5));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          List<dynamic> wrList = data['winrates'];
-          _winrateSpots = wrList.asMap().entries.map((e) {
-            return FlSpot(e.key.toDouble(), e.value);
-          }).toList();
-          _blunderMoves = List<int>.from(data['blunders']);
-        });
-      }
-    } catch (_) {
-      // 後端不在線時靜默忽略，棋譜仍可正常瀏覽
-    }
-  }
+}
 
   Future<void> _fetchLogosCommentary(int moveIndex) async {
     try {
@@ -227,7 +248,9 @@ class _GoBoardPageState extends State<GoBoardPage> {
         body: jsonEncode({
           "winrate":
               _winrateSpots.length > moveIndex ? _winrateSpots[moveIndex].y : 0.5,
-          "winrate_change": 0,
+          "winrate_change": moveIndex > 0 && _winrateSpots.length > moveIndex
+    ? (_winrateSpots[moveIndex].y - _winrateSpots[moveIndex - 1].y)
+    : 0.0,
           "x": 0,
           "y": 0,
         }),
@@ -317,7 +340,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
             (safeTarget > 1) ? _getBoardSnapshot(_history[safeTarget - 2]) : null;
       }
     });
-  }
+  _fetchLogosCommentary(safeTarget);}
 
   void _resetGame() {
     setState(() {
@@ -480,8 +503,34 @@ class _GoBoardPageState extends State<GoBoardPage> {
                       ),
                     ),
                   ),
+                  Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    TextButton(
+      onPressed: () => setState(() => _showBlackWinrate = true),
+      child: Text("黑棋勝率",
+          style: TextStyle(
+              color: _showBlackWinrate ? Colors.black : Colors.white38,
+              fontWeight: FontWeight.bold)),
+      style: TextButton.styleFrom(
+        backgroundColor: _showBlackWinrate ? Colors.amber : Colors.transparent,
+      ),
+    ),
+    const SizedBox(width: 8),
+    TextButton(
+      onPressed: () => setState(() => _showBlackWinrate = false),
+      child: Text("白棋勝率",
+          style: TextStyle(
+              color: !_showBlackWinrate ? Colors.black : Colors.white38,
+              fontWeight: FontWeight.bold)),
+      style: TextButton.styleFrom(
+        backgroundColor: !_showBlackWinrate ? Colors.amber : Colors.transparent,
+      ),
+    ),
+  ],
+),
                   // 勝率圖
-                  SizedBox(height: 140, child: _buildWinrateChart()),
+                  SizedBox(height: 200, child: _buildWinrateChart()),
                   const Divider(color: Colors.white24, height: 1),
                   // 手數資訊
                   Padding(
@@ -522,7 +571,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
     );
   }
 
-  // --- 棋盤組件（使用 GlobalKey + 固定 650 大小）---
+  // --- 棋盤組件（使用 GlobalKey）---
   Widget _buildGoBoard() {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -564,14 +613,18 @@ class _GoBoardPageState extends State<GoBoardPage> {
   // --- 勝率圖表 ---
   Widget _buildWinrateChart() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(10, 16, 20, 8),
       child: LineChart(
         LineChartData(
           minY: 0,
           maxY: 1,
+          minX: 0,
+          maxX: _winrateSpots.length > 1 ? (_winrateSpots.length - 1).toDouble() : 10,
           lineBarsData: [
             LineChartBarData(
-              spots: _winrateSpots,
+              spots: _showBlackWinrate
+              ? _winrateSpots
+              : _winrateSpots.map((e) => FlSpot(e.x, 1 - e.y)).toList(),
               isCurved: true,
               color: Colors.greenAccent,
               barWidth: 2,
@@ -590,11 +643,24 @@ class _GoBoardPageState extends State<GoBoardPage> {
               _jumpToMove(r!.lineBarSpots![0].x.toInt());
             }
           }),
-          titlesData: const FlTitlesData(
-            topTitles: AxisTitles(),
-            rightTitles: AxisTitles(),
-            bottomTitles: AxisTitles(),
-          ),
+          titlesData: FlTitlesData(
+  topTitles: const AxisTitles(),
+  rightTitles: const AxisTitles(),
+  bottomTitles: const AxisTitles(),
+  leftTitles: AxisTitles(
+    sideTitles: SideTitles(
+      showTitles: true,
+      reservedSize: 40,
+      interval: 0.25,
+      getTitlesWidget: (value, meta) {
+        return Text(
+          "${(value * 100).toInt()}%",
+          style: const TextStyle(color: Colors.white54, fontSize: 10),
+        );
+      },
+    ),
+  ),
+),
         ),
       ),
     );

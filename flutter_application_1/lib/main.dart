@@ -213,14 +213,17 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
 
   Future<void> _tryServerAnalysis(String sgfContent) async {
   try {
+    debugPrint("開始連接後端...");
     final response = await http.post(
       Uri.parse('http://127.0.0.1:5001/analyze_sgf'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"sgf_content": sgfContent}),
-    ).timeout(const Duration(seconds: 5));
-
+    ).timeout(const Duration(seconds: 600));
+    debugPrint("後端回應狀態碼: ${response.statusCode}");
+    debugPrint("回應內容前100字: ${response.body.substring(0, min(100, response.body.length))}");
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      debugPrint("後端回傳 winrates 長度: ${(data['winrates'] as List).length}");
       setState(() {
         List<dynamic> wrList = data['winrates'];
         _winrateSpots = wrList.asMap().entries.map((e) {
@@ -228,10 +231,11 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
         }).toList();
         _blunderMoves = List<int>.from(data['blunders']);
       });
+      debugPrint("_winrateSpots 長度: ${_winrateSpots.length}");
       _fetchLogosCommentary(_currentMoveCount);
     }
-  } catch (_) {
-  debugPrint("產生勝率點數: ${_history.length}");
+  } catch (e) {
+    debugPrint("後端連線例外: $e");
     setState(() {
       _winrateSpots = List.generate(_history.length, (i) {
         return FlSpot(i.toDouble(), 0.5);
@@ -616,6 +620,17 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
       padding: const EdgeInsets.fromLTRB(10, 16, 20, 8),
       child: LineChart(
         LineChartData(
+          extraLinesData: ExtraLinesData(
+  horizontalLines: [
+    HorizontalLine(
+      y: 0.5,
+      color: Colors.white54,
+      strokeWidth: 2,
+      dashArray: null, // 實線
+    ),
+  ],
+),
+gridData: const FlGridData(show: false), // 刪除所有格線
           minY: 0,
           maxY: 1,
           minX: 0,
@@ -637,12 +652,41 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
                 ),
               ),
             ),
+            LineChartBarData(
+    spots: _winrateSpots.length > _currentMoveCount
+        ? [_showBlackWinrate
+            ? _winrateSpots[_currentMoveCount]
+            : FlSpot(_winrateSpots[_currentMoveCount].x,
+                1 - _winrateSpots[_currentMoveCount].y)]
+        : [],
+    barWidth: 0,
+    dotData: FlDotData(
+      show: true,
+      getDotPainter: (s, p, b, i) => FlDotCirclePainter(
+        radius: 5,
+        color: Colors.amber,
+        strokeWidth: 2,
+        strokeColor: Colors.white,
+      ),
+    ),
+  ),
           ],
           lineTouchData: LineTouchData(touchCallback: (e, r) {
             if (e is FlTapUpEvent && r?.lineBarSpots != null) {
               _jumpToMove(r!.lineBarSpots![0].x.toInt());
             }
-          }),
+          },
+          touchTooltipData: LineTouchTooltipData(
+    getTooltipItems: (spots) {
+      return spots.map((s) {
+        return LineTooltipItem(
+          "${(s.y * 100).toStringAsFixed(2)}%",
+          const TextStyle(color: Colors.white, fontSize: 12),
+        );
+      }).toList();
+    },
+          ),
+          ), 
           titlesData: FlTitlesData(
   topTitles: const AxisTitles(),
   rightTitles: const AxisTitles(),

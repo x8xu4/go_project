@@ -1,0 +1,118 @@
+2026-04-01 10:45:03+0800: Running with following config:
+logDir = analysis_logs
+maxVisits = 500
+nnCacheSizePowerOfTwo = 23
+nnMaxBatchSize = 64
+nnMutexPoolSizePowerOfTwo = 17
+nnRandomize = true
+numAnalysisThreads = 4
+numSearchThreads = 16
+reportAnalysisWinratesAs = BLACK
+
+2026-04-01 10:45:03+0800: Analysis Engine starting...
+2026-04-01 10:45:03+0800: KataGo v1.16.4
+2026-04-01 10:45:03+0800: nnRandSeed0 = 12098666610434385104
+2026-04-01 10:45:03+0800: After dedups: nnModelFile0 = model.bin.gz useFP16 auto useNHWC auto
+2026-04-01 10:45:03+0800: Initializing neural net buffer to be size 19 * 19 allowing smaller boards
+2026-04-01 10:45:05+0800: Loaded config analysis.cfg
+2026-04-01 10:45:05+0800: Loaded model model.bin.gz
+2026-04-01 10:45:05+0800: Analyzing up to 4 positions at a time in parallel
+2026-04-01 10:45:05+0800: Started, ready to begin handling requests
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_1"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_3"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_5"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_7"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_9"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_11"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_13"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_15"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_17"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_19"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_21"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_23"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_25"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_27"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_29"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_31"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_33"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_35"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_37"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_39"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_41"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_43"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_45"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_47"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_49"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_51"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_53"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_55"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_57"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_59"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_61"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_63"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_65"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_67"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_69"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_71"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_73"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_75"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_77"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_79"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_81"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_83"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_85"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_87"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_89"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_91"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_93"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_95"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_97"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_99"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_101"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_103"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_105"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_107"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_109"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_111"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_113"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_115"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_117"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_119"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_121"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_123"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_125"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_127"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_129"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_131"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_133"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_135"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_137"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_139"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_141"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_143"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_145"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_147"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_149"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_151"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_153"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_155"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_157"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_159"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_161"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_163"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_165"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_167"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_169"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_171"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_173"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_175"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_177"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_179"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_181"}
+2026-04-01 10:45:05+0800: Error: {"error":"Must be a integer or half-integer from -150.0 to 150.0","field":"komi","id":"Step_183"}
+2026-04-01 10:48:22+0800: model.bin.gz
+2026-04-01 10:48:22+0800: NN rows: 0
+2026-04-01 10:48:22+0800: NN batches: 0
+2026-04-01 10:48:22+0800: NN avg batch size: nan
+2026-04-01 10:48:22+0800: GPU -1 finishing, processed 0 rows 0 batches
+2026-04-01 10:48:22+0800: All cleaned up, quitting

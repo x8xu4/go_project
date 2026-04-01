@@ -12,7 +12,7 @@ CORS(app)  # 允許 Flutter Web 跨網域存取
 
 engine = LogosEngine(corpus_path='logosgo_corpus_full.csv')
 
-# --- 設定 KataGo 路徑 (請根據你的電腦修改) ---
+# --- 設定 KataGo 路徑  ---
 KATAGO_EXEC = "katago"   
 MODEL_FILE = "model.bin.gz"  
 CONFIG_FILE = "analysis.cfg" 
@@ -24,6 +24,20 @@ def analyze_sgf():
         sgf_content = data.get('sgf_content')
         if not sgf_content:
             return jsonify({"error": "No SGF content provided"}), 400
+        
+        # --- 自動抓取貼目 ---
+        game = sgf.Sgf_game.from_bytes(sgf_content.encode('utf-8'))
+        # 讀取 KM，如果找不到就預設 7.5
+        raw_komi = game.root.get("KM") if game.root.has_property("KM") else 75
+        # 野狐等平台會把 6.5 存成 65 或 650，需要除以 10
+        if raw_komi > 150:
+            komi = raw_komi / 100
+        elif raw_komi > 15:
+            komi = raw_komi / 10
+        else:
+            komi = float(raw_komi)
+        # 根據貼目推測規則 (選配)
+        rule_set = "chinese" if komi == 7.5 else "korean"
 
         # 寫入暫存檔
         temp_filename = "temp_upload.sgf"
@@ -60,7 +74,7 @@ def analyze_sgf():
                 "id": query_id,
                 "moves": current_moves,
                 "rules": "chinese",
-                "komi": 7.5,
+                "komi": float(komi),
                 "boardXSize": 19,
                 "boardYSize": 19,
                 "maxVisits": 100,
@@ -123,7 +137,11 @@ def analyze_sgf():
         # 找敗著（勝率變動超過 15%）
         blunders = []
         for i in range(1, len(winrates)):
-            if abs(winrates[i] - winrates[i-1]) > 0.15:
+            diff = winrates[i] - winrates[i-1]
+            # 黑棋勝率下降（白棋失誤）或黑棋勝率上升超過門檻（黑棋失誤）
+            if diff > 0.15:  # 黑棋勝率上升 → 白棋在第i-1手失誤
+                blunders.append(i - 1)
+            elif diff < -0.15:  # 黑棋勝率下降 → 黑棋在第i手失誤
                 blunders.append(i)
         print(f"最終 winrates 長度: {len(winrates)}, winrates_raw 筆數: {len(winrates_raw)}")
         return jsonify({
@@ -168,3 +186,8 @@ def get_commentary():
 if __name__ == '__main__':
     # 執行伺服器在 5001 端口
     app.run(host='0.0.0.0', port=5001, debug=True)
+
+"""
+cd ~/Desktop/go_project
+python3 server.py
+"""

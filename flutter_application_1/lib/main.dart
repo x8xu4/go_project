@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 
+//cd flutter_application_1 flutter run
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MaterialApp(
@@ -41,6 +43,9 @@ class _GoBoardPageState extends State<GoBoardPage> {
   int _currentMoveCount = 0;
   final FocusNode _focusNode = FocusNode();
   bool _showBlackWinrate = true; // true = 黑棋勝率，false = 白棋勝率
+  bool _isTrialMode = false;
+  List<Map<String, StoneInfo>> _trialHistory = [];
+  int _trialMoveCount = 0;
 
   // ★ 修正落子偏移：用 GlobalKey 取得棋盤的真實位置
   final GlobalKey _boardKey = GlobalKey();
@@ -330,21 +335,37 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
 
   // --- 3. 跳轉與落子 ---
   void _jumpToMove(int target) {
-    int safeTarget = target.clamp(0, _history.length);
+  if (_isTrialMode) {
+    int safeTarget = target.clamp(0, _trialHistory.length);
     setState(() {
-      _currentMoveCount = safeTarget;
+      _trialMoveCount = safeTarget;
       if (safeTarget == 0) {
-        _stones = {};
-        _isBlack = true;
-        _lastBoardState = null;
+        // 試下模式跳到0，回到試下起點
+        _stones = _history.isNotEmpty ? Map.from(_history[_currentMoveCount - 1]) : {};
+        _isBlack = (_currentMoveCount % 2 == 0);
       } else {
-        _stones = Map.from(_history[safeTarget - 1]);
-        _isBlack = (safeTarget % 2 == 0);
-        _lastBoardState =
-            (safeTarget > 1) ? _getBoardSnapshot(_history[safeTarget - 2]) : null;
+        _stones = Map.from(_trialHistory[safeTarget - 1]);
+        _isBlack = ((_currentMoveCount + safeTarget) % 2 == 0);
       }
     });
-  _fetchLogosCommentary(safeTarget);}
+    return;
+  }
+  int safeTarget = target.clamp(0, _history.length);
+  setState(() {
+    _currentMoveCount = safeTarget;
+    if (safeTarget == 0) {
+      _stones = {};
+      _isBlack = true;
+      _lastBoardState = null;
+    } else {
+      _stones = Map.from(_history[safeTarget - 1]);
+      _isBlack = (safeTarget % 2 == 0);
+      _lastBoardState =
+          (safeTarget > 1) ? _getBoardSnapshot(_history[safeTarget - 2]) : null;
+    }
+  });
+  _fetchLogosCommentary(safeTarget);
+}
 
   void _resetGame() {
     setState(() {
@@ -363,7 +384,7 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
 
   // ★ 修正落子位置：使用 GlobalKey 取得棋盤真實座標
   void _handleTap(TapUpDetails details) {
-    if (_currentMoveCount != _history.length) {
+    if (!_isTrialMode && _currentMoveCount != _history.length) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("請跳至最後一手再落子")));
       return;
@@ -408,8 +429,13 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
         setState(() {
           _lastBoardState = _getBoardSnapshot(_stones);
           _stones = next;
-          _history.add(Map.from(_stones));
-          _currentMoveCount++;
+          if (_isTrialMode) {
+            _trialHistory.add(Map.from(_stones));
+            _trialMoveCount++;
+          } else {
+            _history.add(Map.from(_stones));
+            _currentMoveCount++;
+          }
           _isBlack = !_isBlack;
         });
 
@@ -715,15 +741,16 @@ gridData: const FlGridData(show: false), // 刪除所有格線
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       color: Colors.black45,
-      child: Row(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // 跳到第 0 手
           _navBtn(Icons.first_page, "第0手", () => _jumpToMove(0)),
           // 往前跳 5 手
-          _navBtn(Icons.fast_rewind, "-5",
-              () => _jumpToMove(_currentMoveCount - 5)),
-          _navBtn(Icons.chevron_left, "-1", () => _jumpToMove(_currentMoveCount - 1)),
+          _navBtn(Icons.fast_rewind, "-5", () => _jumpToMove((_isTrialMode ? _trialMoveCount : _currentMoveCount) - 5)),
+          _navBtn(Icons.chevron_left, "-1", () => _jumpToMove((_isTrialMode ? _trialMoveCount : _currentMoveCount) - 1)),
           // 輸入數字跳到指定手順
           SizedBox(
             width: 64,
@@ -733,7 +760,7 @@ gridData: const FlGridData(show: false), // 刪除所有格線
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                hintText: "$_currentMoveCount",
+                hintText: "${_isTrialMode ? _trialMoveCount : _currentMoveCount}",
                 hintStyle: const TextStyle(color: Colors.white38),
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
@@ -754,13 +781,9 @@ gridData: const FlGridData(show: false), // 刪除所有格線
               },
             ),
           ),
-          _navBtn(Icons.chevron_right, "+1", () => _jumpToMove(_currentMoveCount + 1)),
-          // 往後跳 5 手
-          _navBtn(Icons.fast_forward, "+5",
-              () => _jumpToMove(_currentMoveCount + 5)),
-          // 跳到最後一手
-          _navBtn(
-              Icons.last_page, "最後", () => _jumpToMove(_history.length)),
+        _navBtn(Icons.chevron_right, "+1", () => _jumpToMove((_isTrialMode ? _trialMoveCount : _currentMoveCount) + 1)),
+        _navBtn(Icons.fast_forward, "+5", () => _jumpToMove((_isTrialMode ? _trialMoveCount : _currentMoveCount) + 5)),
+        _navBtn(Icons.last_page, "最後", () => _jumpToMove(_isTrialMode ? _trialHistory.length : _history.length)),
           // 顯示手順 Switch
           const SizedBox(width: 16),
           const Text("手順", style: TextStyle(color: Colors.white70, fontSize: 13)),
@@ -769,7 +792,40 @@ gridData: const FlGridData(show: false), // 刪除所有格線
             onChanged: (v) => setState(() => _showMoveNumbers = v),
             activeColor: Colors.greenAccent,
           ),
+          const SizedBox(width: 16),
+ElevatedButton(
+  onPressed: () {
+    setState(() {
+      if (_isTrialMode) {
+        // 結束試下：恢復原棋譜狀態
+        _isTrialMode = false;
+        _trialHistory.clear();
+        _trialMoveCount = 0;
+        if (_currentMoveCount > 0) {
+          _stones = Map.from(_history[_currentMoveCount - 1]);
+        } else {
+          _stones = {};
+        }
+        _isBlack = (_currentMoveCount % 2 == 0);
+      } else {
+        // 進入試下
+        _isTrialMode = true;
+        _trialHistory.clear();
+        _trialMoveCount = 0;
+      }
+    });
+  },
+  style: ElevatedButton.styleFrom(
+    backgroundColor: _isTrialMode ? Colors.redAccent : Colors.blueGrey,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  ),
+  child: Text(
+    _isTrialMode ? "結束試下" : "試下",
+    style: const TextStyle(color: Colors.white, fontSize: 13),
+  ),
+),
         ],
+        ),
       ),
     );
   }

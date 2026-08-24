@@ -98,6 +98,16 @@ class _GoBoardPageState extends State<GoBoardPage> {
         SnackBar(content: Text("正在載入 $fileName ...")),
       );
 
+      // 切換棋譜前，重置試下狀態與舊的解說文字
+      setState(() {
+      _isTrialMode = false;
+      _trialHistory.clear();
+      _trialMoveCount = 0;
+      _currentCommentary = "AI 引擎正在計算勝率與評估數據，請稍候..."; // 先設定為分析中
+      _currentTag = "分析中";
+      });
+
+
       // ★ 本地解析 SGF，不需要後端也能顯示棋譜
       _parseSGFLocally(sgfContent);
 
@@ -238,6 +248,12 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
       });
       debugPrint("_winrateSpots 長度: ${_winrateSpots.length}");
       _fetchLogosCommentary(_currentMoveCount);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _currentTag = "分析失敗";
+       _currentCommentary = "後端分析失敗: ${data['message']}";
+      });
     }
   } catch (e) {
     debugPrint("後端連線例外: $e");
@@ -250,7 +266,34 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
 }
 
   Future<void> _fetchLogosCommentary(int moveIndex) async {
+      // 檢查是否還在分析中，若勝率陣列全是 0.5 (初始狀態)，顯示分析中
+    bool isAnalyzing = _winrateSpots.length > 1 && _winrateSpots.every((spot) => spot.y == 0.5);
+    if (isAnalyzing) {
+        setState(() {
+            _currentTag = "分析中";
+            _currentCommentary = "AI 引擎正在計算勝率與評估數據，請稍候...";
+        });
+        return; // 等待分析完成後會再次呼叫
+    }
+    
+    // 如果已經顯示失敗訊息，就不要去抓解說覆蓋掉
+    if (_currentTag == "分析失敗" || _currentTag == "連線失敗") {
+        return;
+    }
+
     try {
+      // 嘗試從 _stones 獲取最後一手的座標
+      int lastX = 0;
+      int lastY = 0;
+      if (_stones.isNotEmpty) {
+          String lastKey = _stones.keys.lastWhere((k) => _stones[k]!.moveNumber == moveIndex, orElse: () => "0,0");
+          List<String> parts = lastKey.split(',');
+          if (parts.length == 2) {
+              lastX = int.tryParse(parts[0]) ?? 0;
+              lastY = int.tryParse(parts[1]) ?? 0;
+          }
+      }
+
       final response = await http.post(
         Uri.parse('http://127.0.0.1:5001/get_commentary'),
         headers: {"Content-Type": "application/json"},
@@ -260,8 +303,8 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
           "winrate_change": moveIndex > 0 && _winrateSpots.length > moveIndex
     ? (_winrateSpots[moveIndex].y - _winrateSpots[moveIndex - 1].y)
     : 0.0,
-          "x": 0,
-          "y": 0,
+          "x": lastX,
+          "y": lastY,
         }),
       );
       if (response.statusCode == 200) {
@@ -384,9 +427,9 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
 
   // ★ 修正落子位置：使用 GlobalKey 取得棋盤真實座標
   void _handleTap(TapUpDetails details) {
-    if (!_isTrialMode && _currentMoveCount != _history.length) {
+    if (!_isTrialMode) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("請跳至最後一手再落子")));
+          .showSnackBar(const SnackBar(content: Text("請先點擊「試下」按鈕進入試下模式再落子")));
       return;
     }
 
@@ -430,11 +473,17 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
           _lastBoardState = _getBoardSnapshot(_stones);
           _stones = next;
           if (_isTrialMode) {
-            _trialHistory.add(Map.from(_stones));
+          // 試下模式下，我們給予特殊的 moveNumber，加上 10000 作為標記
             _trialMoveCount++;
+            next[key] = StoneInfo(mine, 10000 + _trialMoveCount); // 加上 offset 標記
+            _stones = next;
+            _trialHistory.add(Map.from(_stones));
           } else {
-            _history.add(Map.from(_stones));
             _currentMoveCount++;
+            next[key] = StoneInfo(mine, _currentMoveCount);
+            _stones = next;
+            _history.add(Map.from(_stones));
+
           }
           _isBlack = !_isBlack;
         });
@@ -629,8 +678,9 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
             size: Size(boardSize, boardSize),
             painter: GoBoardPainter(
               stones: _stones,
-              lastMoveIndex: _currentMoveCount,
+              lastMoveIndex: _isTrialMode ? _trialMoveCount : _currentMoveCount,
               showNumbers: _showMoveNumbers,
+              isTrialMode: _isTrialMode,
             ),
           ),
         ),
@@ -671,11 +721,39 @@ gridData: const FlGridData(show: false), // 刪除所有格線
               barWidth: 2,
               dotData: FlDotData(
                 show: true,
-                getDotPainter: (s, p, b, i) => FlDotCirclePainter(
-                  radius:
-                      _blunderMoves.contains(s.x.toInt()) ? 4 : 0,
-                  color: Colors.red,
-                ),
+                getDotPainter: (s, p, b, i) {
+                  // 白棋視角下，敗著的定義相反：黑棋勝率突然上升代表白棋失誤
+                  bool isBlunder = false;
+                  int moveIndex = s.x.toInt();
+                  if (_showBlackWinrate) {
+                    isBlunder = _blunderMoves.contains(moveIndex);
+                  } else {
+                    // 若是白棋勝率，則需標記白棋的失誤 (黑棋勝率大幅上升)
+                    if (moveIndex > 0 && moveIndex < _winrateSpots.length) {
+                      double diff = _winrateSpots[moveIndex].y - _winrateSpots[moveIndex - 1].y;
+                      if (diff > 0.15) { // 黑棋勝率上升 > 15%，代表白棋在前一手(moveIndex-1)失誤，或者這手黑棋下得極好
+                         // 在這裡我們標記為白棋失誤，通常是 moveIndex - 1，但這裡我們根據 _blunderMoves 原始邏輯來判斷
+                         isBlunder = _blunderMoves.contains(moveIndex); // 伺服器端已經將白棋失誤和黑棋失誤都放進 blunders 裡了，我們需要區分
+                      }
+                    }
+                  }
+                  
+                  // 更好的做法：伺服器端區分黑白失誤，或者在這裡透過勝率差來判斷
+                  if (moveIndex > 0 && moveIndex < _winrateSpots.length) {
+                      double diff = _winrateSpots[moveIndex].y - _winrateSpots[moveIndex - 1].y;
+                      if (_showBlackWinrate) {
+                          isBlunder = diff < -0.15; // 黑棋勝率下降 > 15%，黑棋失誤
+                      } else {
+                          isBlunder = diff > 0.15; // 黑棋勝率上升 > 15%，白棋失誤
+                      }
+                  }
+
+                  return FlDotCirclePainter(
+                    radius: isBlunder ? 4 : 0,
+                    color: Colors.red,
+                  );
+                },
+
               ),
             ),
             LineChartBarData(
@@ -852,11 +930,13 @@ class GoBoardPainter extends CustomPainter {
   final Map<String, StoneInfo> stones;
   final bool showNumbers;
   final int lastMoveIndex;
+  final bool isTrialMode;
 
   GoBoardPainter({
     required this.stones,
     required this.showNumbers,
     required this.lastMoveIndex,
+    this.isTrialMode = false,
   });
 
   @override
@@ -901,7 +981,11 @@ class GoBoardPainter extends CustomPainter {
 
     // 棋子
     stones.forEach((k, info) {
-      if (info.moveNumber > lastMoveIndex) return;
+      // 試下模式下，info.moveNumber 是從 1 開始計算的 trialMoveCount
+      // 一般模式下，是 _currentMoveCount
+      // 由於 _stones 已經是當前狀態的 snapshot，我們其實不需要用 moveNumber 來過濾不顯示的棋子
+      // 因為 _stones 裡面的就是 "現在該顯示的棋子"
+      // 原本的過濾會導致試下模式下，原本盤面上的棋子 (moveNumber > trialMoveCount) 被隱藏
       var pos = k.split(',').map(int.parse).toList();
       double cx = padding + pos[0] * step;
       double cy = padding + pos[1] * step;
@@ -919,7 +1003,11 @@ class GoBoardPainter extends CustomPainter {
         );
       }
       // 最後一手標記（紅圈）
-      if (info.moveNumber == lastMoveIndex) {
+      // 由於試下模式的手數會與實戰手數重疊，單純用 moveNumber 判斷會導致實戰中的同手數棋子也被標記。
+      // 最安全的做法是直接比對 key 是否為 stones 的最後一個 key（因為 Map 會保留插入順序，最後落子的一定在最後面）
+      bool isLast = (k == stones.keys.last);
+
+      if (isLast) {
         canvas.drawCircle(
           Offset(cx, cy),
           step * 0.25,
@@ -930,13 +1018,66 @@ class GoBoardPainter extends CustomPainter {
         );
       }
       if (showNumbers) {
-        _drawTxt(
-          canvas,
-          info.moveNumber.toString(),
-          Offset(cx, cy),
-          9,
-          color: info.color == Colors.black ? Colors.white : Colors.black,
-        );
+        // 如果是試下模式，我們只顯示「試下新增」的棋子手數。
+        // 由於試下模式的棋子 moveNumber 是從 1 重新計算的，而原本盤面上的棋子 moveNumber 是實戰手數（通常很大）。
+        // 因此我們可以用這個特性：如果 isTrialMode，且 info.moveNumber <= 試下的總手數，才顯示數字。
+        // 更嚴謹的做法是比對 _trialMoveCount，但 Painter 沒有傳入 _trialMoveCount。
+        // 沒關係，因為試下模式的棋子是在 _history 的基礎上「附加」上去的，
+        // 我們可以傳入一個標記來判斷這顆棋子是不是「試下」的棋子。
+        // 最簡單的方法是：在試下模式時，我們只畫最後這幾顆棋子的數字。
+        // 這裡用一個簡單的邏輯：如果 isTrialMode 為 true，且這顆棋子是屬於試下分支的（這裡我們假設傳進來的 stones 裡面，
+        // 實戰棋子的 moveNumber 會大於試下棋子的 moveNumber，但這樣判斷不準確）。
+        
+        // ★ 修正：為了讓試下模式只顯示試下手數，我們在 _handleTap 寫入試下棋子時，
+        // 可以給它的 moveNumber 加上一個特殊的 offset（例如 10000），或者直接在 painter 裡判斷。
+        // 但其實最簡單的做法是，我們知道在試下模式中，實戰棋子是從 _lastBoardState 繼承來的，
+        // 它們的 moveNumber 是實戰的手數。而試下新下的棋子 moveNumber 是 1, 2, 3...
+        // 所以如果在試下模式，我們只顯示 moveNumber 小於等於當前盤面上所有棋子數量（或者直接不顯示大於某個值的）？
+        // 不對，實戰可能只有 5 手，試下也下了 5 手，這樣無法區分。
+        
+        // 正確解法：如果 isTrialMode，我們只顯示 info.isTrial == true 的棋子。
+        // 但 StoneInfo 目前沒有 isTrial 欄位。
+        // 退而求其次：我們傳遞一個 currentMoveCount 給 Painter，代表「進入試下前的實戰手數」。
+        // 但 Painter signature 沒改。
+        // 我們直接修改這裡：如果 isTrialMode，且這顆棋子的 moveNumber <= 1000（假設試下不會超過 1000 手，而實戰我們會把它的 moveNumber 改成負數或隱藏？不對）
+        
+        // 讓我們回到 main.dart 狀態：在試下模式中，新下的棋子其 moveNumber 被設定為 _trialMoveCount (1, 2, 3...)
+        // 而繼承自實戰的棋子，其 moveNumber 是實戰的 1, 2, 3...
+        // 這樣在 Painter 裡面確實無法區分。
+        // 所以我們應該只在「非試下模式」顯示所有手數，而在「試下模式」中，我們只顯示「試下手數」。
+        // 為了區分，我們可以在 _handleTap 裡面，把試下棋子的 moveNumber 存成負數，畫的時候取絕對值？
+        // 這樣太 hacky。
+       
+        // 我們用一個簡單的規則：在試下模式，我們「不顯示」實戰棋子的數字。
+        // 怎麼知道誰是實戰棋子？實戰棋子是在 `_lastBoardState` 裡面的。
+        // 但我們這裡沒有 `_lastBoardState`。
+        // 那就乾脆在試下模式時，**全部不顯示數字**，或者只顯示最後一手的紅圈就好，這樣最乾淨！
+        // 如果使用者堅持要看試下的 1,2,3，我們就需要改 StoneInfo。
+        // 這裡先採用：試下模式下，如果 showNumbers 為 true，我們仍然顯示，但會混淆。
+        // 我們修改條件：
+        bool shouldShowNum = showNumbers;
+        String displayNum = info.moveNumber.toString();
+        
+        if (isTrialMode) {
+           // 試下模式下，我們只顯示帶有 10000 offset 的棋子數字
+           if (info.moveNumber > 10000) {
+               shouldShowNum = true;
+               displayNum = (info.moveNumber - 10000).toString();
+           } else {
+               shouldShowNum = false; // 隱藏實戰棋子的數字
+           }
+        }
+        
+        if (shouldShowNum) {
+          _drawTxt(
+            canvas,
+            displayNum,
+            Offset(cx, cy),
+            9,
+            color: info.color == Colors.black ? Colors.white : Colors.black,
+          );
+        }
+
       }
     });
   }

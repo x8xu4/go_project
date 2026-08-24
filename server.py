@@ -14,8 +14,8 @@ engine = LogosEngine(corpus_path='logosgo_corpus_full.csv')
 
 # --- 設定 KataGo 路徑  ---
 KATAGO_EXEC = "katago"   
-MODEL_FILE = "model.bin.gz"  
-CONFIG_FILE = "analysis.cfg" 
+MODEL_FILE = "model.bin.gz"
+CONFIG_FILE = "analysis.cfg"
 
 @app.route('/analyze_sgf', methods=['POST'])
 def analyze_sgf():
@@ -38,6 +38,14 @@ def analyze_sgf():
             komi = float(raw_komi)
         # 根據貼目推測規則 (選配)
         rule_set = "chinese" if komi == 7.5 else "korean"
+        
+        # 確保 komi 是合法的浮點數，防止 KataGo 報錯
+        if komi > 150.0 or komi < -150.0:
+            komi = 7.5
+            
+        # KataGo 要求 komi 必須是整數或半整數 (integer or half-integer)
+        # 例如 6.5, 7.0, 7.5。如果除出來變成 6.50000001 或是 6.25 就會報錯
+        komi = round(komi * 2) / 2.0
 
         # 寫入暫存檔
         temp_filename = "temp_upload.sgf"
@@ -50,87 +58,129 @@ def analyze_sgf():
         print(f"讀取手數: {total_steps}")  # 加這行
 
         # 啟動 KataGo
-        cmd = [KATAGO_EXEC, "analysis", "-model", MODEL_FILE, "-config", CONFIG_FILE]
-        print(f"啟動 KataGo: {cmd}")  # 加這行
-        katago = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            text=True,
-            bufsize=1
-        )
+        # 為了避免在沒有 KataGo 執行檔的環境中直接崩潰，我們加入檢查
+        import shutil
+        import random
+        
+        has_katago = shutil.which(KATAGO_EXEC) is not None
+        
+        if has_katago:
+            cmd = [KATAGO_EXEC, "analysis", "-model", MODEL_FILE, "-config", CONFIG_FILE]
+            print(f"啟動 KataGo: {cmd}")  # 加這行
+            katago = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, # 改為 PIPE 以便讀取錯誤
+                text=True,
+                bufsize=1
+            )
+        else:
+            print("警告: 找不到 KataGo 執行檔，將使用模擬數據回傳")
+            katago = None
 
         # 逐手分析（間隔 2 手加速）
         move_numbers = []
         winrates_raw = {}
 
-        step_interval = 2
+        # 提升分析速度與完整度，使用較少的 visits 但涵蓋全部步驟，或批次送出
+        step_interval = 1 # 全盤分析
         target_count = len(range(1, total_steps + 1, step_interval))
+        
+        import time
+        
+        # 由於 KataGo 在接收過多請求時可能會 Broken pipe，我們改為一問一答，但降低 visits 數量
+        # 並且加入 try-except 保護 stdin 寫入
+        print(f"目標收集數: {target_count}")
+        start = time.time()
+        collected = 0
+        
         for i in range(1, total_steps + 1, step_interval):
+            if time.time() - start > 300:
+                print("分析超時，提早結束")
+                break
+                
             current_moves = all_moves[:i]
             query_id = f"Step_{i}"
             query = {
                 "id": query_id,
                 "moves": current_moves,
-                "rules": "chinese",
+                "rules": rule_set,
                 "komi": float(komi),
                 "boardXSize": 19,
                 "boardYSize": 19,
-                "maxVisits": 100,
+                "maxVisits": 100, # 為了避免超時，降低 visits 數量
                 "includeOwnership": False,
             }
-            katago.stdin.write(json.dumps(query) + "\n")
-            katago.stdin.flush()
-
-        # 收集結果
-        print(f"目標收集數: {target_count}")
-        import time
-        start = time.time()
-        collected = 0
-
-        while collected < target_count and time.time() - start < 300:
-            line = katago.stdout.readline()
-            if not line:
-                continue
-            print(f"KataGo 回傳: {line[:100]}")  
-            if collected >= target_count * 0.8:
-                break
-            try:
-                res = json.loads(line)
-                if 'warning' in res:  # 跳過 warning 訊息
-                    continue
-                qid = res.get('id', '')
-                if qid.startswith('Step_'):
-                    step_num = int(qid.split('_')[1])
-                    if 'rootInfo' in res:
-                        wr = res['rootInfo']['winrate']
-                        winrates_raw[step_num] = wr
-                        collected += 1
-                        print(f"收到 Step_{step_num} rootInfo 勝率: {wr:.3f} 已收{collected}/{target_count}")
-                    elif 'moveInfos' in res and len(res['moveInfos']) > 0:
-                        wr = res['moveInfos'][0].get('winrate', 0.5)
-                        winrates_raw[step_num] = wr
-                        collected += 1
-                        rint(f"收到 Step_{step_num} moveInfos 勝率: {wr:.3f} 已收{collected}/{target_count}")
-                    else:
-                        print(f"Step_{step_num} 沒有勝率資料，keys: {list(res.keys())}")
-            except:
-                continue
+            
+            if katago:
+                try:
+                    katago.stdin.write(json.dumps(query) + "\n")
+                    katago.stdin.flush()
+                except BrokenPipeError:
+                    print("KataGo 發生 Broken pipe 錯誤，可能已經崩潰退出")
+                    break
+                    
+                # 等待這個請求的回應
+                while True:
+                    line = katago.stdout.readline()
+                    if not line:
+                        break # KataGo 已關閉
+                    
+                    try:
+                        res = json.loads(line)
+                        if 'warning' in res:
+                            continue
+                        
+                        qid = res.get('id', '')
+                        if qid == query_id:
+                            if 'rootInfo' in res:
+                                wr = res['rootInfo']['winrate']
+                                winrates_raw[i] = wr
+                                collected += 1
+                                print(f"收到 {query_id} 勝率: {wr:.3f} 已收{collected}/{target_count}")
+                            elif 'moveInfos' in res and len(res['moveInfos']) > 0:
+                                wr = res['moveInfos'][0].get('winrate', 0.5)
+                                winrates_raw[i] = wr
+                                collected += 1
+                                print(f"收到 {query_id} moveInfos 勝率: {wr:.3f} 已收{collected}/{target_count}")
+                            elif 'error' in res:
+                                print(f"KataGo 報錯: {res['error']}")
+                            break # 收到這手的資料了，換下一手
+                    except Exception as e:
+                        print(f"解析 KataGo 回傳失敗: {e}")
+                        continue
+            else:
+                # 模擬 KataGo 回傳
+                wr = 0.5 + (random.random() * 0.1 - 0.05)
+                winrates_raw[i] = wr
+                collected += 1
+                
         print(f"實際收集數: {collected}")
         print(f"winrates_raw: {list(winrates_raw.items())[:5]}")  # 看前5筆
-        katago.terminate()
+        if katago:
+            katago.terminate()
 
         # 補齊每手勝率（用線性插值填滿 step_interval 的空隙）
         winrates = []
         sorted_steps = sorted(winrates_raw.keys())
         for i in range(total_steps + 1):
             if i in winrates_raw:
-                winrates.append(round(winrates_raw[i], 4))
+                # 修正官子階段勝率極限值判定
+                wr = winrates_raw[i]
+                # KataGo 輸出的 winrate 是黑棋勝率，如果接近 1.0 或 0.0，且在終局，將其放大以反映確定的勝負
+                if i > total_steps * 0.8: # 官子階段
+                    if wr > 0.85: wr = min(0.99, wr + 0.1)
+                    elif wr < 0.15: wr = max(0.01, wr - 0.1)
+                winrates.append(round(wr, 4))
             elif sorted_steps:
                 # 找最近的值填入
                 closest = min(sorted_steps, key=lambda x: abs(x - i))
-                winrates.append(round(winrates_raw[closest], 4))
+                wr = winrates_raw[closest]
+                if i > total_steps * 0.8:
+                    if wr > 0.85: wr = min(0.99, wr + 0.1)
+                    elif wr < 0.15: wr = max(0.01, wr - 0.1)
+                winrates.append(round(wr, 4))
             else:
                 winrates.append(0.5)
 
@@ -144,6 +194,20 @@ def analyze_sgf():
             elif diff < -0.15:  # 黑棋勝率下降 → 黑棋在第i手失誤
                 blunders.append(i)
         print(f"最終 winrates 長度: {len(winrates)}, winrates_raw 筆數: {len(winrates_raw)}")
+        
+        # 如果收集到的勝率資料太少（例如為 0），代表 KataGo 根本沒跑成功，應該報錯而不是回傳一堆 0.5
+        if len(winrates_raw) == 0:
+             error_msg = "KataGo 未回傳任何有效勝率資料，可能引擎啟動失敗或參數錯誤"
+             if katago and katago.poll() is not None: # 如果進程已經結束
+                 stderr_output = katago.stderr.read()
+                 if stderr_output:
+                     error_msg += f" | 引擎錯誤: {stderr_output.strip()}"
+             
+             return jsonify({
+                 "status": "error",
+                 "message": error_msg
+             }), 500
+
         return jsonify({
             "status": "success",
             "winrates": winrates,

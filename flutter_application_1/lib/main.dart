@@ -46,6 +46,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
   bool _isTrialMode = false;
   List<Map<String, StoneInfo>> _trialHistory = [];
   int _trialMoveCount = 0;
+  int _analysisGeneration = 0; // 每次匯入新棋譜時遞增
 
   // ★ 修正落子偏移：用 GlobalKey 取得棋盤的真實位置
   final GlobalKey _boardKey = GlobalKey();
@@ -103,6 +104,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
       _isTrialMode = false;
       _trialHistory.clear();
       _trialMoveCount = 0;
+      _analysisGeneration++;
       _currentCommentary = "AI 引擎正在計算勝率與評估數據，請稍候..."; // 先設定為分析中
       _currentTag = "分析中";
       });
@@ -227,6 +229,7 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
   }
 
   Future<void> _tryServerAnalysis(String sgfContent) async {
+  final myGeneration = _analysisGeneration;
   try {
     debugPrint("開始連接後端...");
     final response = await http.post(
@@ -234,6 +237,17 @@ if (moveNum > 0 && expectedBlack != isBlackMove) {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"sgf_content": sgfContent}),
     ).timeout(const Duration(seconds: 600));
+
+    if (myGeneration != _analysisGeneration) {
+      debugPrint("棋譜已更換，丟棄舊分析結果");
+      return;
+    }
+
+    if (response.statusCode == 409) {
+      debugPrint("後端已中止舊分析");
+      return;
+    }
+
     debugPrint("後端回應狀態碼: ${response.statusCode}");
     debugPrint("回應內容前100字: ${response.body.substring(0, min(100, response.body.length))}");
     if (response.statusCode == 200) {

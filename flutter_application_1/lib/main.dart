@@ -94,6 +94,14 @@ class _GoBoardPageState extends State<GoBoardPage> {
   final List<List<String>> _trialMoves = [];
   int _trialMoveCount = 0;
   int _analysisGeneration = 0; // 每次匯入新棋譜時遞增
+  String? _analysisJobId;
+  bool _isGameAnalyzing = false;
+  int _analysisCompletedMoves = 0;
+  int _analysisTotalMoves = 0;
+  double? _analysisEtaSeconds;
+  List<Map<String, dynamic>> _moveAnalyses = [];
+  final Map<int, String> _questionCommentaryCache = {};
+  bool _isQuestionLoading = false;
   String? _loadedSgfContent;
   List<double>? _ownership;
   List<double>? _ownershipStdev;
@@ -163,6 +171,14 @@ class _GoBoardPageState extends State<GoBoardPage> {
         _trialMoves.clear();
         _trialMoveCount = 0;
         _analysisGeneration++;
+        _analysisJobId = null;
+        _isGameAnalyzing = true;
+        _analysisCompletedMoves = 0;
+        _analysisTotalMoves = 0;
+        _analysisEtaSeconds = null;
+        _moveAnalyses = [];
+        _questionCommentaryCache.clear();
+        _isQuestionLoading = false;
         _loadedSgfContent = sgfContent;
         _invalidatePositionAnalysis();
         _currentCommentary = "AI 引擎正在計算勝率與評估數據，請稍候..."; // 先設定為分析中
@@ -300,7 +316,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
       _isBlack = _isBlackToMove(_currentMoveCount);
       _lastBoardState = null;
       // ★ 先用平線填滿，後端回來後再更新
-      _winrateSpots = List.generate(newHistory.length, (i) {
+      _winrateSpots = List.generate(newHistory.length + 1, (i) {
         return FlSpot(i.toDouble(), 0.5);
       });
     });
@@ -310,56 +326,206 @@ class _GoBoardPageState extends State<GoBoardPage> {
   Future<void> _tryServerAnalysis(String sgfContent) async {
     final myGeneration = _analysisGeneration;
     try {
-      debugPrint("開始連接後端...");
-      final response = await http
+      debugPrint("建立背景整盤分析...");
+      final startResponse = await http
           .post(
-            Uri.parse('http://127.0.0.1:5001/analyze_sgf'),
+            Uri.parse('http://127.0.0.1:5001/analysis/start'),
             headers: {"Content-Type": "application/json"},
             body: jsonEncode({"sgf_content": sgfContent}),
           )
-          .timeout(const Duration(seconds: 600));
-
-      if (myGeneration != _analysisGeneration) {
-        debugPrint("棋譜已更換，丟棄舊分析結果");
+          .timeout(const Duration(seconds: 15));
+      final startData = jsonDecode(startResponse.body);
+      if (startResponse.statusCode != 202 || startData is! Map) {
+        throw Exception(
+          startData is Map ? startData['message'] ?? "無法建立分析任務" : "無法建立分析任務",
+        );
+      }
+      final jobId = startData['job_id'];
+      if (jobId is! String || jobId.isEmpty) {
+        throw const FormatException("後端未回傳 analysis job id");
+      }
+      if (!mounted || myGeneration != _analysisGeneration) {
+        await _cancelAnalysisJob(jobId, silent: true);
         return;
       }
-
-      if (response.statusCode == 409) {
-        debugPrint("後端已中止舊分析");
-        return;
-      }
-
-      debugPrint("後端回應狀態碼: ${response.statusCode}");
-      debugPrint(
-        "回應內容前100字: ${response.body.substring(0, min(100, response.body.length))}",
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        debugPrint("後端回傳 winrates 長度: ${(data['winrates'] as List).length}");
-        setState(() {
-          List<dynamic> wrList = data['winrates'];
-          _winrateSpots = wrList.asMap().entries.map((e) {
-            return FlSpot(e.key.toDouble(), e.value);
-          }).toList();
-          _blunderMoves = List<int>.from(data['blunders']);
-        });
-        debugPrint("_winrateSpots 長度: ${_winrateSpots.length}");
-        _fetchLogosCommentary(_currentMoveCount);
-      } else {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _currentTag = "分析失敗";
-          _currentCommentary = "後端分析失敗: ${data['message']}";
-        });
-      }
-    } catch (e) {
-      debugPrint("後端連線例外: $e");
       setState(() {
-        _winrateSpots = List.generate(_history.length, (i) {
-          return FlSpot(i.toDouble(), 0.5);
-        });
+        _analysisJobId = jobId;
+        _isGameAnalyzing = true;
+        _analysisCompletedMoves =
+            (startData['completed_moves'] as num?)?.toInt() ?? 0;
+        _analysisTotalMoves =
+            (startData['total_moves'] as num?)?.toInt() ?? _history.length;
+        _analysisEtaSeconds = null;
+        _updateAnalysisProgressCommentary();
+      });
+      await _pollAnalysisJob(jobId, myGeneration);
+    } catch (error) {
+      if (!mounted || myGeneration != _analysisGeneration) return;
+      debugPrint("後端分析例外: $error");
+      setState(() {
+        _isGameAnalyzing = false;
+        _currentTag = "分析失敗";
+        _currentCommentary = "整盤分析失敗：${_cleanError(error)}";
       });
     }
+  }
+
+  String _cleanError(Object error) {
+    return error
+        .toString()
+        .replaceFirst('Exception: ', '')
+        .replaceFirst('FormatException: ', '');
+  }
+
+  String _formatEta(double seconds) {
+    final rounded = max(0, seconds.round());
+    final minutes = rounded ~/ 60;
+    final remainder = rounded % 60;
+    if (minutes == 0) return "約 $remainder 秒";
+    if (remainder == 0) return "約 $minutes 分";
+    return "約 $minutes 分 $remainder 秒";
+  }
+
+  void _updateAnalysisProgressCommentary() {
+    final total = max(1, _analysisTotalMoves);
+    final percent = ((_analysisCompletedMoves / total) * 100)
+        .clamp(0, 100)
+        .round();
+    final etaText = _analysisEtaSeconds == null
+        ? "正在估算分析時間…"
+        : "預估剩餘時間：${_formatEta(_analysisEtaSeconds!)}";
+    _currentTag = "分析中";
+    _currentCommentary =
+        "正在分析棋譜：$_analysisCompletedMoves / $_analysisTotalMoves 手（$percent%）\n\n$etaText";
+  }
+
+  Future<void> _pollAnalysisJob(String jobId, int generation) async {
+    int consecutiveErrors = 0;
+    while (mounted && generation == _analysisGeneration) {
+      try {
+        final response = await http
+            .get(Uri.parse('http://127.0.0.1:5001/analysis/$jobId'))
+            .timeout(const Duration(seconds: 10));
+        if (response.statusCode != 200) {
+          throw Exception("進度查詢失敗（HTTP ${response.statusCode}）");
+        }
+        final data = jsonDecode(response.body);
+        if (data is! Map<String, dynamic>) {
+          throw const FormatException("進度回傳格式錯誤");
+        }
+        consecutiveErrors = 0;
+        final status = data['status'];
+        if (status == 'queued' || status == 'running') {
+          setState(() {
+            _analysisCompletedMoves =
+                (data['completed_moves'] as num?)?.toInt() ?? 0;
+            _analysisTotalMoves =
+                (data['total_moves'] as num?)?.toInt() ?? _history.length;
+            _analysisEtaSeconds = (data['eta_seconds'] as num?)?.toDouble();
+            _isGameAnalyzing = true;
+            _updateAnalysisProgressCommentary();
+          });
+        } else if (status == 'completed') {
+          final result = data['result'];
+          if (result is! Map<String, dynamic>) {
+            throw const FormatException("完成的分析缺少 result");
+          }
+          _applyCompletedGameAnalysis(result);
+          return;
+        } else if (status == 'cancelled') {
+          setState(() {
+            _isGameAnalyzing = false;
+            _currentTag = "已取消";
+            _currentCommentary = "整盤分析已取消。";
+          });
+          return;
+        } else if (status == 'failed') {
+          throw Exception(data['error'] ?? "後端分析失敗");
+        } else {
+          throw FormatException("未知的分析狀態：$status");
+        }
+      } catch (error) {
+        consecutiveErrors++;
+        debugPrint("進度輪詢失敗 ($consecutiveErrors): $error");
+        if (consecutiveErrors >= 5) {
+          if (!mounted || generation != _analysisGeneration) return;
+          setState(() {
+            _isGameAnalyzing = false;
+            _currentTag = "連線失敗";
+            _currentCommentary = "無法取得分析進度，後端任務可能仍在執行：${_cleanError(error)}";
+          });
+          return;
+        }
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 800));
+    }
+  }
+
+  void _applyCompletedGameAnalysis(Map<String, dynamic> result) {
+    final rawWinrates = result['winrates'];
+    final rawMoves = result['move_analyses'];
+    if (rawWinrates is! List || rawMoves is! List) {
+      throw const FormatException("整盤分析結果格式錯誤");
+    }
+    final winrates = rawWinrates
+        .map((value) {
+          if (value is! num) throw const FormatException("勝率格式錯誤");
+          return value.toDouble();
+        })
+        .toList(growable: false);
+    final moves = rawMoves
+        .map((value) {
+          if (value is! Map) throw const FormatException("棋步分析格式錯誤");
+          return Map<String, dynamic>.from(value);
+        })
+        .toList(growable: false);
+    final rawImportant = result['important_moves'];
+    setState(() {
+      _winrateSpots = winrates
+          .asMap()
+          .entries
+          .map((entry) => FlSpot(entry.key.toDouble(), entry.value))
+          .toList(growable: false);
+      _moveAnalyses = moves;
+      _blunderMoves = rawImportant is List
+          ? rawImportant.whereType<num>().map((value) => value.toInt()).toList()
+          : <int>[];
+      _analysisCompletedMoves = _history.length;
+      _analysisTotalMoves = _history.length;
+      _analysisEtaSeconds = 0;
+      _isGameAnalyzing = false;
+      _questionCommentaryCache.clear();
+    });
+    _fetchLogosCommentary(_currentMoveCount);
+  }
+
+  Future<void> _cancelAnalysisJob(String jobId, {bool silent = false}) async {
+    try {
+      await http
+          .post(Uri.parse('http://127.0.0.1:5001/analysis/$jobId/cancel'))
+          .timeout(const Duration(seconds: 10));
+    } catch (error) {
+      if (!silent) {
+        debugPrint("取消分析失敗: $error");
+      }
+    }
+  }
+
+  Future<void> _cancelCurrentGameAnalysis() async {
+    final jobId = _analysisJobId;
+    if (jobId == null || !_isGameAnalyzing) return;
+    _analysisGeneration++;
+    setState(() {
+      _isGameAnalyzing = false;
+      _currentTag = "取消中";
+      _currentCommentary = "正在取消整盤分析…";
+    });
+    await _cancelAnalysisJob(jobId);
+    if (!mounted) return;
+    setState(() {
+      _currentTag = "已取消";
+      _currentCommentary = "整盤分析已取消。";
+    });
   }
 
   void _invalidatePositionAnalysis() {
@@ -731,62 +897,126 @@ class _GoBoardPageState extends State<GoBoardPage> {
   }
 
   Future<void> _fetchLogosCommentary(int moveIndex) async {
-    // 檢查是否還在分析中，若勝率陣列全是 0.5 (初始狀態)，顯示分析中
-    bool isAnalyzing =
-        _winrateSpots.length > 1 &&
-        _winrateSpots.every((spot) => spot.y == 0.5);
-    if (isAnalyzing) {
+    if (_isGameAnalyzing) {
       setState(() {
-        _currentTag = "分析中";
-        _currentCommentary = "AI 引擎正在計算勝率與評估數據，請稍候...";
+        _updateAnalysisProgressCommentary();
       });
-      return; // 等待分析完成後會再次呼叫
-    }
-
-    // 如果已經顯示失敗訊息，就不要去抓解說覆蓋掉
-    if (_currentTag == "分析失敗" || _currentTag == "連線失敗") {
       return;
     }
+    if (_currentTag == "分析失敗" ||
+        _currentTag == "連線失敗" ||
+        _currentTag == "已取消") {
+      return;
+    }
+    if (moveIndex == 0) {
+      setState(() {
+        _currentTag = "起始局面";
+        _currentCommentary = "KataGo 客觀分析\n尚未落子。\n\nLogosGo 解說\n請切換到某一手查看棋步分析。";
+      });
+      return;
+    }
+    if (moveIndex < 1 || moveIndex > _moveAnalyses.length) return;
+    final record = _moveAnalyses[moveIndex - 1];
+    setState(() {
+      _currentTag = record['auto_tag']?.toString() ?? "普通手";
+      _currentCommentary = _composeMoveCommentary(record, moveIndex);
+    });
+  }
 
-    try {
-      // 嘗試從 _stones 獲取最後一手的座標
-      int lastX = 0;
-      int lastY = 0;
-      if (_stones.isNotEmpty) {
-        String lastKey = _stones.keys.lastWhere(
-          (k) => _stones[k]!.moveNumber == moveIndex,
-          orElse: () => "0,0",
+  String _composeMoveCommentary(Map<String, dynamic> record, int moveIndex) {
+    final player = record['player'] == 'B' ? '黑方' : '白方';
+    final actual = record['actual_move']?.toString() ?? '未知';
+    final best = record['best_move']?.toString();
+    final before =
+        ((record['mover_winrate_before'] as num?)?.toDouble() ?? 0.5) * 100;
+    final after =
+        ((record['mover_winrate_after'] as num?)?.toDouble() ?? 0.5) * 100;
+    final wrLoss = ((record['winrate_loss'] as num?)?.toDouble() ?? 0) * 100;
+    final scoreLoss = (record['score_loss'] as num?)?.toDouble() ?? 0;
+    final autoCommentary = record['auto_commentary']?.toString() ?? '';
+    final cached = _questionCommentaryCache[moveIndex];
+    final objective = StringBuffer()
+      ..writeln('KataGo 客觀分析')
+      ..writeln('第 $moveIndex 手：$player $actual')
+      ..writeln(
+        '落子方勝率：${before.toStringAsFixed(1)}% → ${after.toStringAsFixed(1)}%',
+      )
+      ..writeln(
+        '估計損失：${wrLoss.toStringAsFixed(1)}% 勝率／${scoreLoss.toStringAsFixed(1)} 目',
+      )
+      ..writeln('KataGo 一選：${best ?? '未回傳'}')
+      ..writeln()
+      ..writeln('LogosGo 解說')
+      ..write(autoCommentary);
+    if (cached != null) {
+      objective
+        ..writeln()
+        ..writeln()
+        ..writeln('按需講解（已快取）')
+        ..write(cached);
+    }
+    return objective.toString();
+  }
+
+  Future<void> _askWhyCurrentMove() async {
+    final moveIndex = _currentMoveCount;
+    final jobId = _analysisJobId;
+    if (_isGameAnalyzing ||
+        jobId == null ||
+        moveIndex < 1 ||
+        moveIndex > _moveAnalyses.length ||
+        _isQuestionLoading) {
+      return;
+    }
+    final localCached = _questionCommentaryCache[moveIndex];
+    if (localCached != null) {
+      setState(() {
+        _currentCommentary = _composeMoveCommentary(
+          _moveAnalyses[moveIndex - 1],
+          moveIndex,
         );
-        List<String> parts = lastKey.split(',');
-        if (parts.length == 2) {
-          lastX = int.tryParse(parts[0]) ?? 0;
-          lastY = int.tryParse(parts[1]) ?? 0;
-        }
+      });
+      return;
+    }
+    setState(() => _isQuestionLoading = true);
+    try {
+      final response = await http
+          .post(
+            Uri.parse('http://127.0.0.1:5001/analysis/$jobId/ask'),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({"move_number": moveIndex}),
+          )
+          .timeout(const Duration(seconds: 30));
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 ||
+          data is! Map ||
+          data['status'] != 'success') {
+        throw Exception(data is Map ? data['message'] : '講解回傳格式錯誤');
       }
-
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:5001/get_commentary'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "winrate": _winrateSpots.length > moveIndex
-              ? _winrateSpots[moveIndex].y
-              : 0.5,
-          "winrate_change": moveIndex > 0 && _winrateSpots.length > moveIndex
-              ? (_winrateSpots[moveIndex].y - _winrateSpots[moveIndex - 1].y)
-              : 0.0,
-          "x": lastX,
-          "y": lastY,
-        }),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _currentTag = data['tag'];
-          _currentCommentary = data['commentary'];
-        });
+      final commentary = data['commentary'];
+      if (commentary is! String || commentary.isEmpty) {
+        throw const FormatException('按需講解為空');
       }
-    } catch (e) {
-      debugPrint("解說獲取失敗: $e");
+      if (!mounted ||
+          jobId != _analysisJobId ||
+          moveIndex != _currentMoveCount) {
+        return;
+      }
+      setState(() {
+        _questionCommentaryCache[moveIndex] = commentary;
+        _currentCommentary = _composeMoveCommentary(
+          _moveAnalyses[moveIndex - 1],
+          moveIndex,
+        );
+      });
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('提問失敗：${_cleanError(error)}')));
+      }
+    } finally {
+      if (mounted) setState(() => _isQuestionLoading = false);
     }
   }
 
@@ -903,6 +1133,14 @@ class _GoBoardPageState extends State<GoBoardPage> {
       _gameMoveColors.clear();
       _trialHistory.clear();
       _trialMoves.clear();
+      _analysisJobId = null;
+      _isGameAnalyzing = false;
+      _analysisCompletedMoves = 0;
+      _analysisTotalMoves = 0;
+      _analysisEtaSeconds = null;
+      _moveAnalyses = [];
+      _questionCommentaryCache.clear();
+      _isQuestionLoading = false;
       _currentMoveCount = 0;
       _isBlack = true;
       _lastBoardState = null;
@@ -1111,6 +1349,62 @@ class _GoBoardPageState extends State<GoBoardPage> {
                                   ),
                                 ),
                               ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  0,
+                                  16,
+                                  10,
+                                ),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: _isGameAnalyzing
+                                      ? OutlinedButton.icon(
+                                          onPressed: _cancelCurrentGameAnalysis,
+                                          icon: const Icon(
+                                            Icons.stop_circle_outlined,
+                                          ),
+                                          label: const Text("取消整盤分析"),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor:
+                                                Colors.orangeAccent,
+                                          ),
+                                        )
+                                      : ElevatedButton.icon(
+                                          onPressed:
+                                              _currentMoveCount > 0 &&
+                                                  _currentMoveCount <=
+                                                      _moveAnalyses.length &&
+                                                  !_isTrialMode &&
+                                                  !_isQuestionLoading
+                                              ? _askWhyCurrentMove
+                                              : null,
+                                          icon: _isQuestionLoading
+                                              ? const SizedBox(
+                                                  width: 14,
+                                                  height: 14,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: Colors.black,
+                                                      ),
+                                                )
+                                              : const Icon(Icons.help_outline),
+                                          label: Text(
+                                            _questionCommentaryCache
+                                                    .containsKey(
+                                                      _currentMoveCount,
+                                                    )
+                                                ? "查看已快取講解"
+                                                : "提問／為什麼？",
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.amber,
+                                            foregroundColor: Colors.black,
+                                          ),
+                                        ),
+                                ),
+                              ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -1157,7 +1451,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
                               ),
                               // 勝率圖
                               SizedBox(
-                                height: 200,
+                                height: 145,
                                 child: _buildWinrateChart(),
                               ),
                               const Divider(color: Colors.white24, height: 1),
@@ -1301,41 +1595,9 @@ class _GoBoardPageState extends State<GoBoardPage> {
               dotData: FlDotData(
                 show: true,
                 getDotPainter: (s, p, b, i) {
-                  // 白棋視角下，敗著的定義相反：黑棋勝率突然上升代表白棋失誤
-                  bool isBlunder = false;
                   int moveIndex = s.x.toInt();
-                  if (_showBlackWinrate) {
-                    isBlunder = _blunderMoves.contains(moveIndex);
-                  } else {
-                    // 若是白棋勝率，則需標記白棋的失誤 (黑棋勝率大幅上升)
-                    if (moveIndex > 0 && moveIndex < _winrateSpots.length) {
-                      double diff =
-                          _winrateSpots[moveIndex].y -
-                          _winrateSpots[moveIndex - 1].y;
-                      if (diff > 0.15) {
-                        // 黑棋勝率上升 > 15%，代表白棋在前一手(moveIndex-1)失誤，或者這手黑棋下得極好
-                        // 在這裡我們標記為白棋失誤，通常是 moveIndex - 1，但這裡我們根據 _blunderMoves 原始邏輯來判斷
-                        isBlunder = _blunderMoves.contains(
-                          moveIndex,
-                        ); // 伺服器端已經將白棋失誤和黑棋失誤都放進 blunders 裡了，我們需要區分
-                      }
-                    }
-                  }
-
-                  // 更好的做法：伺服器端區分黑白失誤，或者在這裡透過勝率差來判斷
-                  if (moveIndex > 0 && moveIndex < _winrateSpots.length) {
-                    double diff =
-                        _winrateSpots[moveIndex].y -
-                        _winrateSpots[moveIndex - 1].y;
-                    if (_showBlackWinrate) {
-                      isBlunder = diff < -0.15; // 黑棋勝率下降 > 15%，黑棋失誤
-                    } else {
-                      isBlunder = diff > 0.15; // 黑棋勝率上升 > 15%，白棋失誤
-                    }
-                  }
-
                   return FlDotCirclePainter(
-                    radius: isBlunder ? 4 : 0,
+                    radius: _blunderMoves.contains(moveIndex) ? 4 : 0,
                     color: Colors.red,
                   );
                 },

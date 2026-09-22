@@ -9,6 +9,7 @@ import random
 import atexit
 import queue
 from collections import deque
+from dataclasses import dataclass, field
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sgfmill import sgf
@@ -18,6 +19,11 @@ from sgf_utils import (
     get_moves_from_game,
 )
 from logos_engine import LogosEngine
+from analysis_logic import (
+    IMPORTANCE_THRESHOLDS,
+    build_move_analyses,
+    thresholds_as_dict,
+)
 
 app = Flask(__name__)
 CORS(app)
@@ -28,8 +34,18 @@ KATAGO_EXEC = "katago"
 MODEL_FILE = "/Users/ouo1010/Desktop/go_project/model.bin.gz"
 CONFIG_FILE = "/Users/ouo1010/Desktop/go_project/analysis.cfg"
 
+# A slow search is allowed to run indefinitely while KataGo keeps sending
+# reportDuringSearch heartbeats. Only complete inactivity is treated as a hang.
+KATAGO_HEARTBEAT_SECONDS = 5.0
+KATAGO_IDLE_TIMEOUT_SECONDS = 90.0
+WHOLE_GAME_MAX_VISITS = 100
+
 
 class KataGoError(RuntimeError):
+    pass
+
+
+class AnalysisCancelled(RuntimeError):
     pass
 
 
@@ -136,7 +152,31 @@ class KataGoClient:
     def diagnostics(self):
         return " | ".join(list(self._stderr_tail)[-5:])
 
-    def query(self, payload, timeout=60):
+    def _write_payload(self, process, payload):
+        with self._write_lock:
+            if process.poll() is not None or process.stdin is None:
+                raise KataGoError("程式尚未就緒或已停止")
+            process.stdin.write(json.dumps(payload) + "\n")
+            process.stdin.flush()
+
+    def terminate(self, query_id):
+        process = self._ensure_started()
+        self._write_payload(
+            process,
+            {
+                "id": f"terminate-{uuid.uuid4()}",
+                "action": "terminate",
+                "terminateId": query_id,
+            },
+        )
+
+    def query(
+        self,
+        payload,
+        *,
+        idle_timeout=KATAGO_IDLE_TIMEOUT_SECONDS,
+        cancel_event=None,
+    ):
         process = self._ensure_started()
         query_id = payload.get("id")
         if not query_id:
@@ -149,25 +189,94 @@ class KataGoClient:
             self._pending[query_id] = response_queue
 
         try:
-            with self._write_lock:
-                if process.poll() is not None or process.stdin is None:
-                    raise KataGoError("KataGo 尚未就緒或已停止")
-                process.stdin.write(json.dumps(payload) + "\n")
-                process.stdin.flush()
-
-            deadline = time.monotonic() + timeout
+            self._write_payload(process, payload)
+            last_activity = time.monotonic()
             while True:
-                remaining = deadline - time.monotonic()
-                if remaining <= 0:
-                    raise KataGoError(f"KataGo 分析逾時（{timeout} 秒）")
+                if cancel_event is not None and cancel_event.is_set():
+                    self.terminate(query_id)
+                    raise AnalysisCancelled("分析已取消")
+                if process.poll() is not None:
+                    raise KataGoError(f"KataGo 程式已結束 (code={process.poll()})")
                 try:
-                    response = response_queue.get(timeout=remaining)
-                except queue.Empty as exc:
-                    raise KataGoError(f"KataGo 分析逾時（{timeout} 秒）") from exc
+                    response = response_queue.get(timeout=1.0)
+                except queue.Empty:
+                    if time.monotonic() - last_activity > idle_timeout:
+                        self.terminate(query_id)
+                        raise KataGoError(
+                            f"KataGo 已 {idle_timeout:.0f} 秒無任何回應，判定為無回應"
+                        )
+                    continue
+                last_activity = time.monotonic()
                 if "error" in response:
                     raise KataGoError(str(response["error"]))
                 if not response.get("isDuringSearch", False):
                     return response
+        except (BrokenPipeError, OSError) as exc:
+            raise KataGoError(f"無法傳送資料給 KataGo: {exc}") from exc
+        finally:
+            with self._pending_lock:
+                self._pending.pop(query_id, None)
+
+    def query_many(
+        self,
+        payload,
+        expected_turns,
+        on_final_result,
+        *,
+        idle_timeout=KATAGO_IDLE_TIMEOUT_SECONDS,
+        cancel_event=None,
+    ):
+        """Wait for one final response per analyzeTurns entry, with idle watchdog."""
+        process = self._ensure_started()
+        query_id = payload.get("id")
+        if not query_id:
+            raise ValueError("KataGo query 必須包含 id")
+        expected_turns = set(expected_turns)
+        response_queue = queue.Queue()
+        with self._pending_lock:
+            if query_id in self._pending:
+                raise ValueError(f"重複的 KataGo query id: {query_id}")
+            self._pending[query_id] = response_queue
+
+        completed = set()
+        termination_sent = False
+        try:
+            self._write_payload(process, payload)
+            last_activity = time.monotonic()
+            while completed != expected_turns:
+                if cancel_event is not None and cancel_event.is_set():
+                    if not termination_sent:
+                        self.terminate(query_id)
+                        termination_sent = True
+                    raise AnalysisCancelled("分析已取消")
+                if process.poll() is not None:
+                    raise KataGoError(f"KataGo 程式已結束 (code={process.poll()})")
+                try:
+                    response = response_queue.get(timeout=1.0)
+                except queue.Empty:
+                    if time.monotonic() - last_activity > idle_timeout:
+                        self.terminate(query_id)
+                        raise KataGoError(
+                            f"KataGo 已 {idle_timeout:.0f} 秒無任何回應，判定為無回應"
+                        )
+                    continue
+                last_activity = time.monotonic()
+                if "error" in response:
+                    raise KataGoError(str(response["error"]))
+                if response.get("isDuringSearch", False):
+                    continue
+                turn_number = response.get("turnNumber")
+                if not isinstance(turn_number, int) or turn_number not in expected_turns:
+                    raise KataGoError(
+                        f"KataGo 回傳非預期 turnNumber: {turn_number!r}"
+                    )
+                if response.get("noResults"):
+                    raise KataGoError(f"第 {turn_number} 手沒有分析結果")
+                if turn_number in completed:
+                    continue
+                completed.add(turn_number)
+                on_final_result(turn_number, response)
+            return completed
         except (BrokenPipeError, OSError) as exc:
             raise KataGoError(f"無法傳送資料給 KataGo: {exc}") from exc
         finally:
@@ -188,6 +297,241 @@ atexit.register(katago_client.close)
 # 全域分析狀態（取消機制）
 current_analysis_id = None
 analysis_lock = threading.Lock()
+
+
+@dataclass
+class AnalysisJob:
+    job_id: str
+    sgf_content: str
+    total_moves: int
+    status: str = "queued"
+    completed_moves: int = 0
+    created_at: float = field(default_factory=time.time)
+    started_at: float | None = None
+    finished_at: float | None = None
+    eta_seconds: float | None = None
+    error: str | None = None
+    result: dict | None = None
+    position_results: dict = field(default_factory=dict)
+    commentary_cache: dict = field(default_factory=dict)
+    eta_history: list = field(default_factory=list)
+    cancel_event: threading.Event = field(default_factory=threading.Event)
+    done_event: threading.Event = field(default_factory=threading.Event)
+    lock: threading.Lock = field(default_factory=threading.Lock)
+    _last_completion_at: float | None = None
+    _recent_intervals: deque = field(default_factory=lambda: deque(maxlen=20))
+    _ewma_interval: float | None = None
+
+    def start(self):
+        with self.lock:
+            self.status = "running"
+            self.started_at = time.time()
+            self._last_completion_at = time.monotonic()
+
+    def record_position(self, turn_number, response):
+        now = time.monotonic()
+        with self.lock:
+            self.position_results[turn_number] = response
+            if turn_number > 0:
+                self.completed_moves += 1
+
+            if self._last_completion_at is not None:
+                interval = max(0.0, now - self._last_completion_at)
+                self._recent_intervals.append(interval)
+                self._ewma_interval = (
+                    interval
+                    if self._ewma_interval is None
+                    else 0.25 * interval + 0.75 * self._ewma_interval
+                )
+            self._last_completion_at = now
+
+            completed_positions = len(self.position_results)
+            # analyzeTurns 會並行完成局面，單個回傳間隔容易呈現
+            # 「一批很快、下一批較慢」。樣本足夠後，以整體吞吐量
+            # 為主、rolling/EWMA 為輔，並限制單次跳動。
+            if completed_positions >= 8 and self._recent_intervals:
+                ordered = sorted(self._recent_intervals)
+                if len(ordered) >= 6:
+                    ordered = ordered[1:-1]
+                rolling = sum(ordered) / len(ordered)
+                recent_rate = (
+                    0.6 * self._ewma_interval + 0.4 * rolling
+                    if self._ewma_interval is not None
+                    else rolling
+                )
+                overall_rate = self.elapsed_seconds_locked() / completed_positions
+                seconds_per_position = 0.8 * overall_rate + 0.2 * recent_rate
+                remaining_positions = max(
+                    0, (self.total_moves + 1) - completed_positions
+                )
+                raw_eta = seconds_per_position * remaining_positions
+                if self.eta_seconds is None:
+                    self.eta_seconds = raw_eta
+                else:
+                    lower = self.eta_seconds * 0.85
+                    upper = self.eta_seconds * 1.10
+                    self.eta_seconds = min(upper, max(lower, raw_eta))
+                self.eta_history.append(
+                    {
+                        "completed": self.completed_moves,
+                        "eta_seconds": self.eta_seconds,
+                        "elapsed_seconds": self.elapsed_seconds_locked(),
+                    }
+                )
+
+    def elapsed_seconds_locked(self):
+        if self.started_at is None:
+            return 0.0
+        end = self.finished_at or time.time()
+        return max(0.0, end - self.started_at)
+
+    def finish(self, status, *, result=None, error=None):
+        with self.lock:
+            self.status = status
+            self.result = result
+            self.error = error
+            self.finished_at = time.time()
+            self.eta_seconds = 0.0 if status == "completed" else None
+        self.done_event.set()
+
+    def snapshot(self, include_result=False):
+        with self.lock:
+            payload = {
+                "job_id": self.job_id,
+                "status": self.status,
+                "completed_moves": self.completed_moves,
+                "total_moves": self.total_moves,
+                "progress": (
+                    self.completed_moves / self.total_moves
+                    if self.total_moves
+                    else 1.0
+                ),
+                "eta_seconds": self.eta_seconds,
+                "elapsed_seconds": self.elapsed_seconds_locked(),
+                "error": self.error,
+            }
+            if include_result and self.status == "completed":
+                payload["result"] = self.result
+            return payload
+
+
+analysis_jobs = {}
+analysis_jobs_lock = threading.Lock()
+active_analysis_job_id = None
+
+
+def _get_analysis_job(job_id):
+    with analysis_jobs_lock:
+        return analysis_jobs.get(job_id)
+
+
+def _register_analysis_job(sgf_content):
+    global active_analysis_job_id
+    game, all_moves, _, _ = _parse_sgf(sgf_content)
+    del game
+    job = AnalysisJob(str(uuid.uuid4()), sgf_content, len(all_moves))
+    with analysis_jobs_lock:
+        previous = analysis_jobs.get(active_analysis_job_id)
+        if previous is not None and previous.status in ("queued", "running"):
+            previous.cancel_event.set()
+        analysis_jobs[job.job_id] = job
+        active_analysis_job_id = job.job_id
+        completed = [
+            item
+            for item in analysis_jobs.values()
+            if item.status in ("completed", "failed", "cancelled")
+        ]
+        for old in sorted(completed, key=lambda item: item.created_at)[:-8]:
+            analysis_jobs.pop(old.job_id, None)
+    threading.Thread(target=_run_analysis_job, args=(job,), daemon=True).start()
+    return job
+
+
+def _run_analysis_job(job):
+    job.start()
+    try:
+        if not katago_client.available:
+            raise KataGoError("找不到 KataGo 執行檔、模型或設定檔")
+        game, all_moves, komi, rule_set = _parse_sgf(job.sgf_content)
+        initial_stones = get_initial_stones_from_game(game)
+        turns = list(range(len(all_moves) + 1))
+        query_id = f"whole-game-{job.job_id}"
+        query = {
+            "id": query_id,
+            "moves": all_moves,
+            "analyzeTurns": turns,
+            "rules": rule_set,
+            "komi": float(komi),
+            "boardXSize": 19,
+            "boardYSize": 19,
+            "maxVisits": WHOLE_GAME_MAX_VISITS,
+            "analysisPVLen": 8,
+            "includeOwnership": False,
+            "reportDuringSearchEvery": KATAGO_HEARTBEAT_SECONDS,
+            "priority": 0,
+        }
+        if initial_stones:
+            query["initialStones"] = initial_stones
+
+        print(f"背景分析開始 {job.job_id[:8]}: {len(all_moves)} 手")
+        katago_client.query_many(
+            query,
+            turns,
+            job.record_position,
+            cancel_event=job.cancel_event,
+        )
+        if job.cancel_event.is_set():
+            raise AnalysisCancelled("分析已取消")
+
+        move_analyses = build_move_analyses(all_moves, job.position_results)
+        for record in move_analyses:
+            record["auto_tag"] = engine._importance_title(record)
+            record["auto_commentary"] = engine.generate_auto_commentary(record)
+
+        winrates = [
+            float(job.position_results[index]["rootInfo"]["winrate"])
+            for index in turns
+        ]
+        scores = [
+            float(job.position_results[index]["rootInfo"]["scoreLead"])
+            for index in turns
+        ]
+        importance_counts = {
+            level: sum(1 for item in move_analyses if item["importance"] == level)
+            for level in ("ordinary", "notice", "important", "decisive")
+        }
+        important_moves = [
+            item["move_number"]
+            for item in move_analyses
+            if item["importance"] in ("important", "decisive")
+        ]
+        result = {
+            "winrates": winrates,
+            "scores": scores,
+            "move_analyses": move_analyses,
+            "important_moves": important_moves,
+            "blunders": important_moves,
+            "importance_counts": importance_counts,
+            "thresholds": thresholds_as_dict(),
+            "move_count": len(all_moves),
+            "eta_history": list(job.eta_history),
+        }
+        job.finish("completed", result=result)
+        print(
+            f"背景分析完成 {job.job_id[:8]}: {len(all_moves)} 手, "
+            f"{job.snapshot()['elapsed_seconds']:.1f} 秒"
+        )
+    except AnalysisCancelled as exc:
+        job.finish("cancelled", error=str(exc))
+        print(f"背景分析取消 {job.job_id[:8]}")
+    except Exception as exc:
+        import traceback
+
+        detail = traceback.format_exc()
+        print(f"背景分析失敗 {job.job_id[:8]}: {detail}")
+        diagnostics = katago_client.diagnostics()
+        message = str(exc) + (f" | KataGo: {diagnostics}" if diagnostics else "")
+        job.finish("failed", error=message)
 
 
 def _parse_game_settings(game):
@@ -240,6 +584,70 @@ def _validate_extra_moves(raw_moves):
     return validated
 
 
+@app.route('/analysis/start', methods=['POST'])
+def start_analysis():
+    try:
+        data = request.get_json(silent=True) or {}
+        sgf_content = data.get("sgf_content")
+        if not isinstance(sgf_content, str) or not sgf_content.strip():
+            return jsonify({"status": "error", "message": "尚未提供 SGF 棋譜"}), 400
+        job = _register_analysis_job(sgf_content)
+        return jsonify(job.snapshot()), 202
+    except Exception as exc:
+        import traceback
+
+        print(f"建立分析任務失敗: {traceback.format_exc()}")
+        return jsonify({"status": "error", "message": str(exc)}), 400
+
+
+@app.route('/analysis/<job_id>', methods=['GET'])
+def get_analysis_status(job_id):
+    job = _get_analysis_job(job_id)
+    if job is None:
+        return jsonify({"status": "error", "message": "找不到分析任務"}), 404
+    return jsonify(job.snapshot(include_result=True))
+
+
+@app.route('/analysis/<job_id>/cancel', methods=['POST'])
+def cancel_analysis(job_id):
+    job = _get_analysis_job(job_id)
+    if job is None:
+        return jsonify({"status": "error", "message": "找不到分析任務"}), 404
+    job.cancel_event.set()
+    return jsonify({"status": "cancelling", "job_id": job_id})
+
+
+@app.route('/analysis/<job_id>/ask', methods=['POST'])
+def ask_about_move(job_id):
+    job = _get_analysis_job(job_id)
+    if job is None:
+        return jsonify({"status": "error", "message": "找不到分析任務"}), 404
+    if job.status != "completed" or not isinstance(job.result, dict):
+        return jsonify({"status": "error", "message": "整盤分析尚未完成"}), 409
+    data = request.get_json(silent=True) or {}
+    try:
+        move_number = int(data.get("move_number"))
+    except (TypeError, ValueError):
+        return jsonify({"status": "error", "message": "move_number 格式錯誤"}), 400
+    records = job.result.get("move_analyses", [])
+    if not 1 <= move_number <= len(records):
+        return jsonify({"status": "error", "message": "move_number 超出範圍"}), 400
+
+    with job.lock:
+        cached = move_number in job.commentary_cache
+        if cached:
+            commentary = job.commentary_cache[move_number]
+        else:
+            commentary = engine.generate_detailed_commentary(records[move_number - 1])
+            job.commentary_cache[move_number] = commentary
+    return jsonify({
+        "status": "success",
+        "move_number": move_number,
+        "commentary": commentary,
+        "cached": cached,
+    })
+
+
 @app.route('/analyze_sgf', methods=['POST'])
 def analyze_sgf():
     global current_analysis_id
@@ -269,7 +677,6 @@ def analyze_sgf():
         target_count = len(range(1, total_steps + 1, step_interval))
         print(f"目標收集數: {target_count}")
 
-        start = time.time()
         collected = 0
         winrates_raw = {}
 
@@ -280,10 +687,6 @@ def analyze_sgf():
                 if current_analysis_id != my_id:
                     print(f"偵測到新棋譜，中止分析 {my_id[:8]}")
                     return jsonify({"status": "cancelled", "message": "新棋譜已匯入"}), 409
-
-            if time.time() - start > 300:
-                print("分析超時，提早結束")
-                break
 
             current_moves = all_moves[:i]
             query_id = f"game-{my_id}-step-{i}"
@@ -296,13 +699,14 @@ def analyze_sgf():
                 "boardYSize": 19,
                 "maxVisits": 100,
                 "includeOwnership": False,
+                "reportDuringSearchEvery": KATAGO_HEARTBEAT_SECONDS,
             }
             if initial_stones:
                 query["initialStones"] = initial_stones
 
             if has_katago:
                 try:
-                    res = katago_client.query(query, timeout=45)
+                    res = katago_client.query(query)
                     if 'rootInfo' in res:
                         wr = res['rootInfo']['winrate']
                         winrates_raw[i] = wr
@@ -415,6 +819,8 @@ def analyze_position():
             "maxVisits": 500,
             "includeOwnership": True,
             "includeOwnershipStdev": True,
+            "reportDuringSearchEvery": KATAGO_HEARTBEAT_SECONDS,
+            "priority": 10,
         }
         if initial_stones:
             query["initialStones"] = initial_stones
@@ -422,7 +828,7 @@ def analyze_position():
             f"開始形勢判斷 {query_id[:17]}: "
             f"實戰 {move_count} 手、試下 {len(moves) - move_count} 手"
         )
-        response = katago_client.query(query, timeout=45)
+        response = katago_client.query(query)
 
         ownership = response.get("ownership")
         ownership_stdev = response.get("ownershipStdev")

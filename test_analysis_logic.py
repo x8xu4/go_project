@@ -69,6 +69,19 @@ class AnalysisLogicTests(unittest.TestCase):
         self.assertGreaterEqual(records[0]["search_winrate_loss"], 0.19)
         self.assertEqual(records[0]["best_move"], "Q16")
 
+    def test_pv_is_explicitly_tied_to_the_position_before_the_move(self):
+        record = build_move_analyses(
+            [["B", "D4"]],
+            {
+                0: position(0, 0.70, 8.0, best_move="Q16", actual_move="D4"),
+                1: position(1, 0.68, 7.0),
+            },
+        )[0]
+        self.assertTrue(record["pv_reliable"])
+        self.assertEqual(record["pv_base_move"], 0)
+        self.assertEqual(record["pv_first_player"], "B")
+        self.assertEqual(record["best_pv"][0], record["best_move"])
+
     def test_small_change_stays_ordinary(self):
         self.assertEqual(classify_importance(0.01, 0.8), "ordinary")
 

@@ -22,6 +22,326 @@ class StoneInfo {
   StoneInfo(this.color, this.moveNumber);
 }
 
+const String gtpColumns = 'ABCDEFGHJKLMNOPQRST';
+const int trialMoveNumberOffset = 10000;
+
+int? variationDisplayMoveNumber(int storedMoveNumber, bool isTrialMode) {
+  if (!isTrialMode) return storedMoveNumber;
+  if (storedMoveNumber <= trialMoveNumberOffset) return null;
+  return storedMoveNumber - trialMoveNumberOffset;
+}
+
+bool restoredMoveNumbersValue(bool currentValue, bool? savedValue) {
+  return savedValue ?? currentValue;
+}
+
+final RegExp _pvCoordinateSequence = RegExp(
+  r'(?:PASS|[A-HJ-T](?:1[0-9]|[1-9]))(?:\s*(?:→|->|,|、)\s*(?:PASS|[A-HJ-T](?:1[0-9]|[1-9]))){1,}',
+  caseSensitive: false,
+);
+
+String commentaryForDisplay(String commentary, {required bool hasVariation}) {
+  if (!hasVariation || commentary.isEmpty) return commentary;
+  final retained = commentary
+      .split('\n')
+      .where((line) => !_pvCoordinateSequence.hasMatch(line))
+      .toList();
+  final result = retained
+      .join('\n')
+      .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+      .trim();
+  return result.isEmpty ? '具體下法請查看下方推薦變化圖。' : result;
+}
+
+class VariationStep {
+  final String player;
+  final String coordinate;
+  final int? x;
+  final int? y;
+
+  const VariationStep._({
+    required this.player,
+    required this.coordinate,
+    this.x,
+    this.y,
+  });
+
+  bool get isPass => x == null || y == null;
+}
+
+class VariationStone {
+  final String player;
+  final int moveNumber;
+
+  const VariationStone(this.player, this.moveNumber);
+}
+
+class VariationReplayResult {
+  final List<Map<String, VariationStone>> history;
+  final String? previousBoardSignature;
+  final String nextPlayer;
+
+  const VariationReplayResult({
+    required this.history,
+    required this.previousBoardSignature,
+    required this.nextPlayer,
+  });
+}
+
+class VariationPlan {
+  final int sourceMove;
+  final int baseMove;
+  final List<VariationStep> steps;
+  final VariationReplayResult replay;
+
+  const VariationPlan({
+    required this.sourceMove,
+    required this.baseMove,
+    required this.steps,
+    required this.replay,
+  });
+}
+
+Map<String, StoneInfo> variationBoardToStones(
+  Map<String, VariationStone> stones,
+) {
+  return stones.map(
+    (key, value) => MapEntry(
+      key,
+      StoneInfo(
+        value.player == 'B' ? Colors.black : Colors.white,
+        value.moveNumber,
+      ),
+    ),
+  );
+}
+
+List<Map<String, StoneInfo>> trialHistoryFromReplay(
+  VariationReplayResult replay,
+) {
+  return replay.history.map(variationBoardToStones).toList(growable: true);
+}
+
+class RecommendedVariationLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const RecommendedVariationLink({
+    super.key,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: BorderRadius.circular(6),
+        hoverColor: Colors.amber.withValues(alpha: 0.12),
+        splashColor: Colors.amber.withValues(alpha: 0.18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.play_circle_outline,
+                color: Colors.amber,
+                size: 19,
+              ),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.amber,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+VariationStep? parseGtpVariationStep(String player, Object? rawMove) {
+  if ((player != 'B' && player != 'W') || rawMove is! String) return null;
+  final coordinate = rawMove.toUpperCase();
+  if (coordinate == 'PASS') {
+    return VariationStep._(player: player, coordinate: coordinate);
+  }
+  if (coordinate.length < 2 || !gtpColumns.contains(coordinate[0])) {
+    return null;
+  }
+  final row = int.tryParse(coordinate.substring(1));
+  if (row == null || row < 1 || row > 19) return null;
+  return VariationStep._(
+    player: player,
+    coordinate: coordinate,
+    x: gtpColumns.indexOf(coordinate[0]),
+    y: 19 - row,
+  );
+}
+
+List<VariationStep>? parseReliablePv(
+  Map<String, dynamic> record,
+  int sourceMove,
+) {
+  if (record['pv_reliable'] != true ||
+      record['pv_base_move'] != sourceMove - 1 ||
+      record['pv_first_player'] != record['player']) {
+    return null;
+  }
+  final rawPv = record['best_pv'];
+  final bestMove = record['best_move'];
+  if (rawPv is! List || rawPv.isEmpty || bestMove is! String) return null;
+  if (rawPv.first.toString().toUpperCase() != bestMove.toUpperCase()) {
+    return null;
+  }
+
+  var player = record['pv_first_player'].toString();
+  final steps = <VariationStep>[];
+  for (final rawMove in rawPv) {
+    final step = parseGtpVariationStep(player, rawMove);
+    if (step == null) return null;
+    steps.add(step);
+    player = player == 'B' ? 'W' : 'B';
+  }
+  return steps;
+}
+
+String variationBoardSignature(Map<String, VariationStone> board) {
+  final keys = board.keys.toList()..sort();
+  return keys.map((key) => '$key:${board[key]!.player}').join('|');
+}
+
+Set<String> _variationGroup(
+  Map<String, VariationStone> board,
+  int startX,
+  int startY,
+  String player,
+) {
+  final start = '$startX,$startY';
+  if (board[start]?.player != player) return <String>{};
+  final group = <String>{start};
+  final queue = <String>[start];
+  for (var index = 0; index < queue.length; index++) {
+    final position = queue[index].split(',').map(int.parse).toList();
+    for (final direction in const <List<int>>[
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ]) {
+      final x = position[0] + direction[0];
+      final y = position[1] + direction[1];
+      final key = '$x,$y';
+      if (x >= 0 &&
+          x < 19 &&
+          y >= 0 &&
+          y < 19 &&
+          board[key]?.player == player &&
+          group.add(key)) {
+        queue.add(key);
+      }
+    }
+  }
+  return group;
+}
+
+bool _variationGroupHasLiberty(
+  Map<String, VariationStone> board,
+  Set<String> group,
+) {
+  for (final stone in group) {
+    final position = stone.split(',').map(int.parse).toList();
+    for (final direction in const <List<int>>[
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ]) {
+      final x = position[0] + direction[0];
+      final y = position[1] + direction[1];
+      if (x >= 0 && x < 19 && y >= 0 && y < 19 && !board.containsKey('$x,$y')) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+VariationReplayResult? replayVariation({
+  required Map<String, VariationStone> baseBoard,
+  required List<VariationStep> steps,
+  required String startingPlayer,
+  String? previousBoardSignature,
+  int startingTrialMoveNumber = 0,
+}) {
+  var board = Map<String, VariationStone>.from(baseBoard);
+  var expectedPlayer = startingPlayer;
+  var previousSignature = previousBoardSignature;
+  final history = <Map<String, VariationStone>>[];
+
+  for (var index = 0; index < steps.length; index++) {
+    final step = steps[index];
+    if (step.player != expectedPlayer) return null;
+    final beforeSignature = variationBoardSignature(board);
+    if (!step.isPass) {
+      final key = '${step.x},${step.y}';
+      if (board.containsKey(key)) return null;
+      final next = Map<String, VariationStone>.from(board)
+        ..[key] = VariationStone(
+          step.player,
+          trialMoveNumberOffset + startingTrialMoveNumber + index + 1,
+        );
+      final opponent = step.player == 'B' ? 'W' : 'B';
+      for (final direction in const <List<int>>[
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0],
+      ]) {
+        final x = step.x! + direction[0];
+        final y = step.y! + direction[1];
+        final adjacent = '$x,$y';
+        if (next[adjacent]?.player != opponent) continue;
+        final group = _variationGroup(next, x, y, opponent);
+        if (!_variationGroupHasLiberty(next, group)) {
+          for (final stone in group) {
+            next.remove(stone);
+          }
+        }
+      }
+      final ownGroup = _variationGroup(next, step.x!, step.y!, step.player);
+      if (!_variationGroupHasLiberty(next, ownGroup) ||
+          (previousSignature != null &&
+              variationBoardSignature(next) == previousSignature)) {
+        return null;
+      }
+      board = next;
+    }
+    history.add(Map<String, VariationStone>.from(board));
+    previousSignature = beforeSignature;
+    expectedPlayer = expectedPlayer == 'B' ? 'W' : 'B';
+  }
+
+  return VariationReplayResult(
+    history: history,
+    previousBoardSignature: previousSignature,
+    nextPlayer: expectedPlayer,
+  );
+}
+
 const double ownershipDisplayThreshold = 0.60;
 const double deadStoneOwnershipThreshold = 0.80;
 const double maxDeadStoneOwnershipStdev = 0.25;
@@ -93,6 +413,10 @@ class _GoBoardPageState extends State<GoBoardPage> {
   List<Map<String, StoneInfo>> _trialHistory = [];
   final List<List<String>> _trialMoves = [];
   int _trialMoveCount = 0;
+  int? _trialReturnMoveCount;
+  int? _trialBaseMoveCount;
+  int? _variationSourceMoveCount;
+  bool? _trialReturnShowMoveNumbers;
   int _analysisGeneration = 0; // 每次匯入新棋譜時遞增
   String? _analysisJobId;
   bool _isGameAnalyzing = false;
@@ -166,10 +490,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
 
       // 切換棋譜前，重置試下狀態與舊的解說文字
       setState(() {
-        _isTrialMode = false;
-        _trialHistory.clear();
-        _trialMoves.clear();
-        _trialMoveCount = 0;
+        _clearTrialState(restoreMoveNumbers: true);
         _analysisGeneration++;
         _analysisJobId = null;
         _isGameAnalyzing = true;
@@ -542,8 +863,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
   }
 
   String _toGtpCoordinate(int x, int y) {
-    const columns = 'ABCDEFGHJKLMNOPQRST';
-    return '${columns[x]}${19 - y}';
+    return '${gtpColumns[x]}${19 - y}';
   }
 
   bool _isBlackToMove(int moveCount) {
@@ -933,8 +1253,15 @@ class _GoBoardPageState extends State<GoBoardPage> {
         ((record['mover_winrate_after'] as num?)?.toDouble() ?? 0.5) * 100;
     final wrLoss = ((record['winrate_loss'] as num?)?.toDouble() ?? 0) * 100;
     final scoreLoss = (record['score_loss'] as num?)?.toDouble() ?? 0;
-    final autoCommentary = record['auto_commentary']?.toString() ?? '';
-    final cached = _questionCommentaryCache[moveIndex];
+    final hasVariation = _buildVariationPlan(moveIndex) != null;
+    final autoCommentary = commentaryForDisplay(
+      record['auto_commentary']?.toString() ?? '',
+      hasVariation: hasVariation,
+    );
+    final rawCached = _questionCommentaryCache[moveIndex];
+    final cached = rawCached == null
+        ? null
+        : commentaryForDisplay(rawCached, hasVariation: hasVariation);
     final objective = StringBuffer()
       ..writeln('KataGo 客觀分析')
       ..writeln('第 $moveIndex 手：$player $actual')
@@ -1020,6 +1347,231 @@ class _GoBoardPageState extends State<GoBoardPage> {
     }
   }
 
+  Map<String, StoneInfo> _formalBoardAt(int moveCount) {
+    if (moveCount <= 0) return Map<String, StoneInfo>.from(_initialStones);
+    return Map<String, StoneInfo>.from(_history[moveCount - 1]);
+  }
+
+  Map<String, VariationStone> _toVariationBoard(Map<String, StoneInfo> stones) {
+    return stones.map(
+      (key, value) => MapEntry(
+        key,
+        VariationStone(
+          value.color == Colors.black ? 'B' : 'W',
+          value.moveNumber,
+        ),
+      ),
+    );
+  }
+
+  Map<String, StoneInfo> _fromVariationBoard(
+    Map<String, VariationStone> stones,
+  ) {
+    return variationBoardToStones(stones);
+  }
+
+  String? _previousFormalBoardSignature(int baseMove) {
+    if (baseMove <= 0) return null;
+    final previous = baseMove == 1 ? _initialStones : _history[baseMove - 2];
+    return variationBoardSignature(_toVariationBoard(previous));
+  }
+
+  bool _commentaryAllowsVariation(Map<String, dynamic> record, int moveIndex) {
+    final importance = record['importance'];
+    return importance == 'important' ||
+        importance == 'decisive' ||
+        _questionCommentaryCache.containsKey(moveIndex);
+  }
+
+  VariationPlan? _buildVariationPlan(int moveIndex) {
+    if (_isGameAnalyzing ||
+        moveIndex < 1 ||
+        moveIndex > _moveAnalyses.length ||
+        moveIndex > _history.length) {
+      return null;
+    }
+    final record = _moveAnalyses[moveIndex - 1];
+    if (!_commentaryAllowsVariation(record, moveIndex)) return null;
+    final steps = parseReliablePv(record, moveIndex);
+    if (steps == null || steps.isEmpty) return null;
+    final baseMove = moveIndex - 1;
+    final replay = replayVariation(
+      baseBoard: _toVariationBoard(_formalBoardAt(baseMove)),
+      steps: steps,
+      startingPlayer: record['pv_first_player'].toString(),
+      previousBoardSignature: _previousFormalBoardSignature(baseMove),
+    );
+    if (replay == null || replay.history.length != steps.length) return null;
+    return VariationPlan(
+      sourceMove: moveIndex,
+      baseMove: baseMove,
+      steps: steps,
+      replay: replay,
+    );
+  }
+
+  void _clearTrialState({bool restoreMoveNumbers = false}) {
+    final previousShowMoveNumbers = _trialReturnShowMoveNumbers;
+    _isTrialMode = false;
+    // Variation history used to be fixed-length, which made clear() throw.
+    // Replacing it also guarantees the next trial session starts growable.
+    _trialHistory = <Map<String, StoneInfo>>[];
+    _trialMoves.clear();
+    _trialMoveCount = 0;
+    _trialReturnMoveCount = null;
+    _trialBaseMoveCount = null;
+    _variationSourceMoveCount = null;
+    _trialReturnShowMoveNumbers = null;
+    if (restoreMoveNumbers) {
+      _showMoveNumbers = restoredMoveNumbersValue(
+        _showMoveNumbers,
+        previousShowMoveNumbers,
+      );
+    }
+  }
+
+  void _startManualTrialMode() {
+    if (_isTrialMode) return;
+    final baseMove = _currentMoveCount;
+    setState(() {
+      _clearTrialState(restoreMoveNumbers: true);
+      _isTrialMode = true;
+      _trialReturnMoveCount = baseMove;
+      _trialBaseMoveCount = baseMove;
+      _lastBoardState = _previousFormalBoardSignature(baseMove);
+      _invalidatePositionAnalysis();
+    });
+  }
+
+  void _endTrialMode({int? restoreMove}) {
+    if (!_isTrialMode) return;
+    final target =
+        (restoreMove ??
+                _trialReturnMoveCount ??
+                _trialBaseMoveCount ??
+                _currentMoveCount)
+            .clamp(0, _history.length)
+            .toInt();
+    setState(() {
+      _clearTrialState(restoreMoveNumbers: true);
+      _currentMoveCount = target;
+      _stones = _formalBoardAt(target);
+      _isBlack = _isBlackToMove(target);
+      _lastBoardState = _previousFormalBoardSignature(target);
+      _invalidatePositionAnalysis();
+    });
+    _fetchLogosCommentary(target);
+  }
+
+  void _showRecommendedVariation() {
+    final sourceMove = _isTrialMode
+        ? (_variationSourceMoveCount ?? _trialReturnMoveCount)
+        : _currentMoveCount;
+    if (sourceMove == null) return;
+    final plan = _buildVariationPlan(sourceMove);
+    if (plan == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('這一手沒有可安全還原的推薦變化')));
+      return;
+    }
+
+    final previousShowMoveNumbers =
+        _trialReturnShowMoveNumbers ?? _showMoveNumbers;
+    final trialHistory = trialHistoryFromReplay(plan.replay);
+    setState(() {
+      _clearTrialState(restoreMoveNumbers: true);
+      _isTrialMode = true;
+      _trialReturnMoveCount = plan.sourceMove;
+      _trialBaseMoveCount = plan.baseMove;
+      _variationSourceMoveCount = plan.sourceMove;
+      _trialReturnShowMoveNumbers = previousShowMoveNumbers;
+      _showMoveNumbers = true;
+      _currentMoveCount = plan.baseMove;
+      _trialHistory = trialHistory;
+      _trialMoves.addAll(
+        plan.steps.map((step) => [step.player, step.coordinate]),
+      );
+      _trialMoveCount = trialHistory.length;
+      _stones = trialHistory.isEmpty
+          ? _formalBoardAt(plan.baseMove)
+          : Map<String, StoneInfo>.from(trialHistory.last);
+      _isBlack = plan.replay.nextPlayer == 'B';
+      _lastBoardState = plan.replay.previousBoardSignature;
+      _invalidatePositionAnalysis();
+    });
+  }
+
+  bool _appendTrialMove(String player, String coordinate) {
+    final step = parseGtpVariationStep(player, coordinate);
+    if (step == null) return false;
+    if (_trialMoveCount < _trialHistory.length) {
+      _trialHistory.removeRange(_trialMoveCount, _trialHistory.length);
+      _trialMoves.removeRange(_trialMoveCount, _trialMoves.length);
+    }
+    final replay = replayVariation(
+      baseBoard: _toVariationBoard(_stones),
+      steps: [step],
+      startingPlayer: player,
+      previousBoardSignature: _lastBoardState,
+      startingTrialMoveNumber: _trialMoveCount,
+    );
+    if (replay == null || replay.history.isEmpty) return false;
+    final next = _fromVariationBoard(replay.history.last);
+    _trialMoveCount++;
+    _trialMoves.add([player, step.coordinate]);
+    _trialHistory.add(Map<String, StoneInfo>.from(next));
+    _stones = next;
+    _isBlack = replay.nextPlayer == 'B';
+    _lastBoardState = replay.previousBoardSignature;
+    _invalidatePositionAnalysis();
+    return true;
+  }
+
+  String _variationLinkLabel(Map<String, dynamic> record) {
+    final winrate = (record['best_black_winrate'] as num?)?.toDouble();
+    final score = (record['best_black_score_lead'] as num?)?.toDouble();
+    if (winrate == null || score == null) return '查看推薦變化圖';
+    final signedScore = score >= 0
+        ? '+${score.toStringAsFixed(1)}'
+        : score.toStringAsFixed(1);
+    return '推薦變化　黑 ${(winrate * 100).toStringAsFixed(1)}% / $signedScore 目';
+  }
+
+  Widget _buildCommentaryContent() {
+    VariationPlan? plan;
+    Map<String, dynamic>? record;
+    if (!_isTrialMode &&
+        _currentMoveCount >= 1 &&
+        _currentMoveCount <= _moveAnalyses.length) {
+      plan = _buildVariationPlan(_currentMoveCount);
+      if (plan != null) record = _moveAnalyses[_currentMoveCount - 1];
+    }
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _currentCommentary,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 17,
+              height: 1.5,
+            ),
+          ),
+          if (plan != null && record != null) ...[
+            const SizedBox(height: 14),
+            RecommendedVariationLink(
+              key: const ValueKey('recommended-variation-link'),
+              label: _variationLinkLabel(record),
+              onTap: _showRecommendedVariation,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   // --- 2. 核心規則邏輯 ---
   String _getBoardSnapshot(Map<String, StoneInfo> stones) {
     var sortedKeys = stones.keys.toList()..sort();
@@ -1092,16 +1644,25 @@ class _GoBoardPageState extends State<GoBoardPage> {
       setState(() {
         _invalidatePositionAnalysis();
         _trialMoveCount = safeTarget;
+        final baseMove = _trialBaseMoveCount ?? _currentMoveCount;
         if (safeTarget == 0) {
           // 試下模式跳到0，回到試下起點
-          _stones = _currentMoveCount > 0
-              ? Map.from(_history[_currentMoveCount - 1])
-              : Map.from(_initialStones);
-          _isBlack = _isBlackToMove(_currentMoveCount);
+          _stones = _formalBoardAt(baseMove);
+          _isBlack = _isBlackToMove(baseMove);
+          _lastBoardState = _previousFormalBoardSignature(baseMove);
         } else {
           _stones = Map.from(_trialHistory[safeTarget - 1]);
-          final baseIsBlack = _isBlackToMove(_currentMoveCount);
+          final baseIsBlack = _isBlackToMove(baseMove);
           _isBlack = safeTarget.isEven ? baseIsBlack : !baseIsBlack;
+          if (safeTarget == 1) {
+            _lastBoardState = variationBoardSignature(
+              _toVariationBoard(_formalBoardAt(baseMove)),
+            );
+          } else {
+            _lastBoardState = variationBoardSignature(
+              _toVariationBoard(_trialHistory[safeTarget - 2]),
+            );
+          }
         }
       });
       return;
@@ -1131,8 +1692,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
       _initialStones = {};
       _history.clear();
       _gameMoveColors.clear();
-      _trialHistory.clear();
-      _trialMoves.clear();
+      _clearTrialState(restoreMoveNumbers: true);
       _analysisJobId = null;
       _isGameAnalyzing = false;
       _analysisCompletedMoves = 0;
@@ -1180,57 +1740,9 @@ class _GoBoardPageState extends State<GoBoardPage> {
     if (x >= 0 && x < 19 && y >= 0 && y < 19) {
       String key = "$x,$y";
       if (!_stones.containsKey(key)) {
-        Map<String, StoneInfo> next = Map.from(_stones);
-        Color mine = _isBlack ? Colors.black : Colors.white;
-        Color opp = _isBlack ? Colors.white : Colors.black;
-        next[key] = StoneInfo(mine, _currentMoveCount + 1);
-
-        bool captured = false;
-        for (var d in _directions) {
-          int nx = x + d[0], ny = y + d[1];
-          if (next.containsKey("$nx,$ny") && next["$nx,$ny"]!.color == opp) {
-            if (_getLiberties(nx, ny, opp, next).isEmpty) {
-              _removeGroup(nx, ny, opp, next);
-              captured = true;
-            }
-          }
-        }
-        if (!captured && _getLiberties(x, y, mine, next).isEmpty) return;
-        if (_lastBoardState != null &&
-            _getBoardSnapshot(next) == _lastBoardState)
-          return;
-
         setState(() {
-          _invalidatePositionAnalysis();
-          _lastBoardState = _getBoardSnapshot(_stones);
-          _stones = next;
-          if (_isTrialMode) {
-            // 試下模式下，我們給予特殊的 moveNumber，加上 10000 作為標記
-            if (_trialMoveCount < _trialHistory.length) {
-              _trialHistory.removeRange(_trialMoveCount, _trialHistory.length);
-              _trialMoves.removeRange(_trialMoveCount, _trialMoves.length);
-            }
-            _trialMoveCount++;
-            next[key] = StoneInfo(
-              mine,
-              10000 + _trialMoveCount,
-            ); // 加上 offset 標記
-            _stones = next;
-            _trialHistory.add(Map.from(_stones));
-            _trialMoves.add([
-              mine == Colors.black ? "B" : "W",
-              _toGtpCoordinate(x, y),
-            ]);
-          } else {
-            _currentMoveCount++;
-            next[key] = StoneInfo(mine, _currentMoveCount);
-            _stones = next;
-            _history.add(Map.from(_stones));
-          }
-          _isBlack = !_isBlack;
+          _appendTrialMove(_isBlack ? 'B' : 'W', _toGtpCoordinate(x, y));
         });
-
-        _fetchLogosCommentary(_currentMoveCount);
       }
     }
   }
@@ -1461,7 +1973,10 @@ class _GoBoardPageState extends State<GoBoardPage> {
                                   horizontal: 16,
                                 ),
                                 child: Text(
-                                  "第 $_currentMoveCount 手 / 共 ${_history.length} 手",
+                                  _isTrialMode &&
+                                          _variationSourceMoveCount != null
+                                      ? "第 ${_variationSourceMoveCount!} 手的推薦變化（起點 ${_trialBaseMoveCount ?? 0} 手）"
+                                      : "第 $_currentMoveCount 手 / 共 ${_history.length} 手",
                                   style: const TextStyle(
                                     color: Colors.white54,
                                     fontSize: 13,
@@ -1474,16 +1989,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16.0,
                                   ),
-                                  child: SingleChildScrollView(
-                                    child: Text(
-                                      _currentCommentary,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 17,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ),
+                                  child: _buildCommentaryContent(),
                                 ),
                               ),
                               const Padding(
@@ -1539,6 +2045,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
             ),
             // ★ GestureDetector 包住 CustomPaint，onTapUp 改用 _handleTap
             child: GestureDetector(
+              key: const ValueKey('go-board-gesture'),
               onTapUp: _handleTap,
               child: CustomPaint(
                 key: _boardKey, // ★ 綁定 GlobalKey
@@ -1629,7 +2136,12 @@ class _GoBoardPageState extends State<GoBoardPage> {
           lineTouchData: LineTouchData(
             touchCallback: (e, r) {
               if (e is FlTapUpEvent && r?.lineBarSpots != null) {
-                _jumpToMove(r!.lineBarSpots![0].x.toInt());
+                final target = r!.lineBarSpots![0].x.toInt();
+                if (_isTrialMode) {
+                  _endTrialMode(restoreMove: target);
+                } else {
+                  _jumpToMove(target);
+                }
               }
             },
             touchTooltipData: LineTouchTooltipData(
@@ -1762,28 +2274,11 @@ class _GoBoardPageState extends State<GoBoardPage> {
             const SizedBox(width: 16),
             ElevatedButton(
               onPressed: () {
-                setState(() {
-                  if (_isTrialMode) {
-                    // 結束試下：恢復原棋譜狀態
-                    _isTrialMode = false;
-                    _trialHistory.clear();
-                    _trialMoves.clear();
-                    _trialMoveCount = 0;
-                    if (_currentMoveCount > 0) {
-                      _stones = Map.from(_history[_currentMoveCount - 1]);
-                    } else {
-                      _stones = Map.from(_initialStones);
-                    }
-                    _isBlack = _isBlackToMove(_currentMoveCount);
-                  } else {
-                    // 進入試下
-                    _isTrialMode = true;
-                    _trialHistory.clear();
-                    _trialMoves.clear();
-                    _trialMoveCount = 0;
-                  }
-                  _invalidatePositionAnalysis();
-                });
+                if (_isTrialMode) {
+                  _endTrialMode();
+                } else {
+                  _startManualTrialMode();
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isTrialMode
@@ -1951,12 +2446,8 @@ class GoBoardPainter extends CustomPainter {
     }
 
     // 棋子
+    final lastStoneKey = stones.isEmpty ? null : stones.keys.last;
     stones.forEach((k, info) {
-      // 試下模式下，info.moveNumber 是從 1 開始計算的 trialMoveCount
-      // 一般模式下，是 _currentMoveCount
-      // 由於 _stones 已經是當前狀態的 snapshot，我們其實不需要用 moveNumber 來過濾不顯示的棋子
-      // 因為 _stones 裡面的就是 "現在該顯示的棋子"
-      // 原本的過濾會導致試下模式下，原本盤面上的棋子 (moveNumber > trialMoveCount) 被隱藏
       var pos = k.split(',').map(int.parse).toList();
       double cx = padding + pos[0] * step;
       double cy = padding + pos[1] * step;
@@ -1976,10 +2467,7 @@ class GoBoardPainter extends CustomPainter {
             ..strokeWidth = 1,
         );
       }
-      // 最後一手標記（紅圈）
-      // 由於試下模式的手數會與實戰手數重疊，單純用 moveNumber 判斷會導致實戰中的同手數棋子也被標記。
-      // 最安全的做法是直接比對 key 是否為 stones 的最後一個 key（因為 Map 會保留插入順序，最後落子的一定在最後面）
-      bool isLast = (k == stones.keys.last);
+      final isLast = k == lastStoneKey;
 
       if (isLast) {
         canvas.drawCircle(
@@ -1992,60 +2480,14 @@ class GoBoardPainter extends CustomPainter {
         );
       }
       if (showNumbers) {
-        // 如果是試下模式，我們只顯示「試下新增」的棋子手數。
-        // 由於試下模式的棋子 moveNumber 是從 1 重新計算的，而原本盤面上的棋子 moveNumber 是實戰手數（通常很大）。
-        // 因此我們可以用這個特性：如果 isTrialMode，且 info.moveNumber <= 試下的總手數，才顯示數字。
-        // 更嚴謹的做法是比對 _trialMoveCount，但 Painter 沒有傳入 _trialMoveCount。
-        // 沒關係，因為試下模式的棋子是在 _history 的基礎上「附加」上去的，
-        // 我們可以傳入一個標記來判斷這顆棋子是不是「試下」的棋子。
-        // 最簡單的方法是：在試下模式時，我們只畫最後這幾顆棋子的數字。
-        // 這裡用一個簡單的邏輯：如果 isTrialMode 為 true，且這顆棋子是屬於試下分支的（這裡我們假設傳進來的 stones 裡面，
-        // 實戰棋子的 moveNumber 會大於試下棋子的 moveNumber，但這樣判斷不準確）。
-
-        // ★ 修正：為了讓試下模式只顯示試下手數，我們在 _handleTap 寫入試下棋子時，
-        // 可以給它的 moveNumber 加上一個特殊的 offset（例如 10000），或者直接在 painter 裡判斷。
-        // 但其實最簡單的做法是，我們知道在試下模式中，實戰棋子是從 _lastBoardState 繼承來的，
-        // 它們的 moveNumber 是實戰的手數。而試下新下的棋子 moveNumber 是 1, 2, 3...
-        // 所以如果在試下模式，我們只顯示 moveNumber 小於等於當前盤面上所有棋子數量（或者直接不顯示大於某個值的）？
-        // 不對，實戰可能只有 5 手，試下也下了 5 手，這樣無法區分。
-
-        // 正確解法：如果 isTrialMode，我們只顯示 info.isTrial == true 的棋子。
-        // 但 StoneInfo 目前沒有 isTrial 欄位。
-        // 退而求其次：我們傳遞一個 currentMoveCount 給 Painter，代表「進入試下前的實戰手數」。
-        // 但 Painter signature 沒改。
-        // 我們直接修改這裡：如果 isTrialMode，且這顆棋子的 moveNumber <= 1000（假設試下不會超過 1000 手，而實戰我們會把它的 moveNumber 改成負數或隱藏？不對）
-
-        // 讓我們回到 main.dart 狀態：在試下模式中，新下的棋子其 moveNumber 被設定為 _trialMoveCount (1, 2, 3...)
-        // 而繼承自實戰的棋子，其 moveNumber 是實戰的 1, 2, 3...
-        // 這樣在 Painter 裡面確實無法區分。
-        // 所以我們應該只在「非試下模式」顯示所有手數，而在「試下模式」中，我們只顯示「試下手數」。
-        // 為了區分，我們可以在 _handleTap 裡面，把試下棋子的 moveNumber 存成負數，畫的時候取絕對值？
-        // 這樣太 hacky。
-
-        // 我們用一個簡單的規則：在試下模式，我們「不顯示」實戰棋子的數字。
-        // 怎麼知道誰是實戰棋子？實戰棋子是在 `_lastBoardState` 裡面的。
-        // 但我們這裡沒有 `_lastBoardState`。
-        // 那就乾脆在試下模式時，**全部不顯示數字**，或者只顯示最後一手的紅圈就好，這樣最乾淨！
-        // 如果使用者堅持要看試下的 1,2,3，我們就需要改 StoneInfo。
-        // 這裡先採用：試下模式下，如果 showNumbers 為 true，我們仍然顯示，但會混淆。
-        // 我們修改條件：
-        bool shouldShowNum = showNumbers;
-        String displayNum = info.moveNumber.toString();
-
-        if (isTrialMode) {
-          // 試下模式下，我們只顯示帶有 10000 offset 的棋子數字
-          if (info.moveNumber > 10000) {
-            shouldShowNum = true;
-            displayNum = (info.moveNumber - 10000).toString();
-          } else {
-            shouldShowNum = false; // 隱藏實戰棋子的數字
-          }
-        }
-
-        if (shouldShowNum) {
+        final displayMoveNumber = variationDisplayMoveNumber(
+          info.moveNumber,
+          isTrialMode,
+        );
+        if (displayMoveNumber != null) {
           _drawTxt(
             canvas,
-            displayNum,
+            displayMoveNumber.toString(),
             Offset(cx, cy),
             9,
             color: info.color == Colors.black ? Colors.white : Colors.black,

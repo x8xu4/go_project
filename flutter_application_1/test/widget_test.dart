@@ -49,6 +49,159 @@ void main() {
     },
   );
 
+  test('reliable PV uses pre-move base and alternates players', () {
+    final steps = parseReliablePv({
+      'pv_reliable': true,
+      'pv_base_move': 48,
+      'pv_first_player': 'B',
+      'player': 'B',
+      'best_move': 'Q16',
+      'best_pv': ['Q16', 'D4', 'pass'],
+    }, 49);
+
+    expect(steps, isNotNull);
+    expect(steps![0].player, 'B');
+    expect(steps[0].x, 15);
+    expect(steps[0].y, 3);
+    expect(steps[1].player, 'W');
+    expect(steps[2].player, 'B');
+    expect(steps[2].isPass, isTrue);
+    expect(
+      parseReliablePv({
+        'pv_reliable': true,
+        'pv_base_move': 49,
+        'pv_first_player': 'B',
+        'player': 'B',
+        'best_move': 'Q16',
+        'best_pv': ['Q16'],
+      }, 49),
+      isNull,
+    );
+  });
+
+  test('variation replay handles captures without mutating base board', () {
+    final base = <String, VariationStone>{
+      '1,1': const VariationStone('W', 2),
+      '0,1': const VariationStone('B', 1),
+      '1,0': const VariationStone('B', 3),
+      '2,1': const VariationStone('B', 5),
+    };
+    final step = parseGtpVariationStep('B', 'B17')!;
+    final replay = replayVariation(
+      baseBoard: base,
+      steps: [step],
+      startingPlayer: 'B',
+    );
+
+    expect(replay, isNotNull);
+    expect(replay!.history.single.containsKey('1,1'), isFalse);
+    expect(replay.history.single['1,2']?.player, 'B');
+    expect(base.containsKey('1,1'), isTrue);
+    expect(base.containsKey('1,2'), isFalse);
+  });
+
+  test('variation history is growable and continuation uses N plus 1', () {
+    final replay = replayVariation(
+      baseBoard: const <String, VariationStone>{},
+      steps: [
+        parseGtpVariationStep('B', 'D4')!,
+        parseGtpVariationStep('W', 'Q16')!,
+      ],
+      startingPlayer: 'B',
+    )!;
+    final history = trialHistoryFromReplay(replay);
+
+    expect(history, hasLength(2));
+    expect(() => history.add(<String, StoneInfo>{}), returnsNormally);
+    history.removeLast();
+    expect(() => history.clear(), returnsNormally);
+
+    final continuation = replayVariation(
+      baseBoard: replay.history.last,
+      steps: [parseGtpVariationStep('B', 'C3')!],
+      startingPlayer: 'B',
+      previousBoardSignature: replay.previousBoardSignature,
+      startingTrialMoveNumber: 2,
+    )!;
+    final continuedStone = continuation.history.single['2,16'];
+    expect(continuedStone?.moveNumber, trialMoveNumberOffset + 3);
+    expect(variationDisplayMoveNumber(continuedStone!.moveNumber, true), 3);
+  });
+
+  test('successive variations use independent history and restart at one', () {
+    final firstReplay = replayVariation(
+      baseBoard: const <String, VariationStone>{},
+      steps: [parseGtpVariationStep('B', 'D4')!],
+      startingPlayer: 'B',
+    )!;
+    final firstHistory = trialHistoryFromReplay(firstReplay);
+    firstHistory.clear();
+
+    final secondReplay = replayVariation(
+      baseBoard: const <String, VariationStone>{},
+      steps: [parseGtpVariationStep('B', 'Q16')!],
+      startingPlayer: 'B',
+    )!;
+    final secondHistory = trialHistoryFromReplay(secondReplay);
+    final secondStone = secondHistory.single['15,3'];
+
+    expect(firstHistory, isEmpty);
+    expect(secondHistory, hasLength(1));
+    expect(variationDisplayMoveNumber(secondStone!.moveNumber, true), 1);
+  });
+
+  test('trial numbers hide formal stones and display relative sequence', () {
+    expect(variationDisplayMoveNumber(84, false), 84);
+    expect(variationDisplayMoveNumber(84, true), isNull);
+    expect(variationDisplayMoveNumber(trialMoveNumberOffset + 1, true), 1);
+    expect(variationDisplayMoveNumber(trialMoveNumberOffset + 7, true), 7);
+  });
+
+  test('variation temporarily enables numbers and restores prior setting', () {
+    expect(restoredMoveNumbersValue(true, false), isFalse);
+    expect(restoredMoveNumbersValue(true, true), isTrue);
+    expect(restoredMoveNumbersValue(false, null), isFalse);
+  });
+
+  test(
+    'commentary hides full PV only when a usable board variation exists',
+    () {
+      const commentary =
+          '這一手讓原本的領先幅度縮小。\n\n'
+          'KataGo 推薦變化的開頭是：S9 → P9 → O8 → O9 → N8 → Q9。\n\n'
+          '落子方勝率：67.6% → 61.2%。';
+
+      final withVariation = commentaryForDisplay(
+        commentary,
+        hasVariation: true,
+      );
+      expect(withVariation, contains('領先幅度縮小'));
+      expect(withVariation, isNot(contains('S9 → P9')));
+      expect(withVariation, contains('67.6% → 61.2%'));
+      expect(commentaryForDisplay(commentary, hasVariation: false), commentary);
+    },
+  );
+
+  testWidgets('recommended variation link is visibly clickable', (
+    WidgetTester tester,
+  ) async {
+    var tapped = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RecommendedVariationLink(
+            label: '推薦變化　黑 67.6% / +3.0 目',
+            onTap: () => tapped = true,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('推薦變化'), findsOneWidget);
+    await tester.tap(find.byType(RecommendedVariationLink));
+    expect(tapped, isTrue);
+  });
+
   testWidgets('main screen exposes game controls', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: GoBoardPage()));
 
@@ -62,5 +215,24 @@ void main() {
     await tester.tap(find.text('形勢判斷'));
     await tester.pumpAndSettle();
     expect(find.text('請先匯入 SGF 棋譜'), findsOneWidget);
+  });
+
+  testWidgets('manual trial can place a move and exit without exception', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: GoBoardPage()));
+
+    await tester.tap(find.text('試下'));
+    await tester.pump();
+    expect(find.text('結束試下'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('go-board-gesture')));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('結束試下'));
+    await tester.pump();
+    expect(find.text('試下'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from typing import Any
 
 
+GTP_COLUMNS = "ABCDEFGHJKLMNOPQRST"
+
+
 @dataclass(frozen=True)
 class ImportanceThresholds:
     """Centralised thresholds calibrated from representative project SGFs."""
@@ -71,6 +74,26 @@ def _find_actual_move_info(
     return None
 
 
+def _is_valid_gtp_move(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    move = value.upper()
+    if move == "PASS":
+        return True
+    if len(move) < 2 or move[0] not in GTP_COLUMNS:
+        return False
+    try:
+        row = int(move[1:])
+    except ValueError:
+        return False
+    return 1 <= row <= 19
+
+
+def _optional_float(mapping: dict[str, Any], key: str) -> float | None:
+    value = mapping.get(key)
+    return float(value) if isinstance(value, (int, float)) else None
+
+
 def build_move_analyses(
     all_moves: list[list[str]],
     position_results: dict[int, dict[str, Any]],
@@ -122,6 +145,10 @@ def build_move_analyses(
         actual_info = _find_actual_move_info(move_infos, actual_move)
         best_move = best_info.get("move")
 
+        raw_pv = best_info.get("pv")
+        pv = [str(move).upper() for move in raw_pv[:8]] if isinstance(raw_pv, list) else []
+        best_candidate_visits = int(best_info.get("visits", 0) or 0)
+
         search_wr_loss = 0.0
         search_score_loss = 0.0
         actual_candidate_visits = (
@@ -150,6 +177,14 @@ def build_move_analyses(
             search_wr_loss = max(0.0, best_wr - actual_wr)
             search_score_loss = max(0.0, best_score - actual_score)
 
+        pv_reliable = (
+            isinstance(best_move, str)
+            and bool(pv)
+            and pv[0] == best_move.upper()
+            and all(_is_valid_gtp_move(move) for move in pv)
+            and best_candidate_visits >= minimum_reliable_visits
+        )
+
         winrate_loss = max(observed_wr_loss, search_wr_loss)
         score_loss = max(observed_score_loss, search_score_loss)
         importance = classify_importance(
@@ -157,14 +192,20 @@ def build_move_analyses(
         )
         crossed_even = (mover_wr_before >= 0.5) != (mover_wr_after >= 0.5)
 
-        pv = best_info.get("pv") if isinstance(best_info.get("pv"), list) else []
         records.append(
             {
                 "move_number": move_number,
                 "player": player,
                 "actual_move": actual_move,
                 "best_move": best_move,
-                "best_pv": [str(move) for move in pv[:8]],
+                "best_pv": pv,
+                "best_candidate_visits": best_candidate_visits,
+                "best_black_winrate": _optional_float(best_info, "winrate"),
+                "best_black_score_lead": _optional_float(best_info, "scoreLead"),
+                "pv_reliable": pv_reliable,
+                # moveInfos comes from the position before the played move.
+                "pv_base_move": move_number - 1,
+                "pv_first_player": player,
                 "black_winrate_before": black_wr_before,
                 "black_winrate_after": black_wr_after,
                 "mover_winrate_before": mover_wr_before,

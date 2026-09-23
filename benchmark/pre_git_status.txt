@@ -1,0 +1,5 @@
+ M analysis_logic.py
+ M flutter_application_1/lib/main.dart
+ M flutter_application_1/test/widget_test.dart
+ M test_analysis_logic.py
+?? analysis_logs/20260923-095021-6BCE9F1F.log

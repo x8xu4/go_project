@@ -1,0 +1,26 @@
+2026-09-23 11:39:29+0800: Running with following config:
+logDir = /Users/ouo1010/Desktop/go_project/benchmark/katago_logs/visits_16x4
+maxVisits = 500
+nnCacheSizePowerOfTwo = 23
+nnMaxBatchSize = 64
+nnMutexPoolSizePowerOfTwo = 17
+nnRandomize = true
+numAnalysisThreads = 16
+numSearchThreads = 4
+reportAnalysisWinratesAs = BLACK
+
+2026-09-23 11:39:29+0800: Analysis Engine starting...
+2026-09-23 11:39:29+0800: KataGo v1.16.4
+2026-09-23 11:39:29+0800: nnRandSeed0 = 1368407554007921788
+2026-09-23 11:39:29+0800: After dedups: nnModelFile0 = /Users/ouo1010/Desktop/go_project/model.bin.gz useFP16 auto useNHWC auto
+2026-09-23 11:39:29+0800: Initializing neural net buffer to be size 19 * 19 allowing smaller boards
+2026-09-23 11:39:33+0800: Loaded config /Users/ouo1010/Desktop/go_project/benchmark/visits_configs/config_16x4.cfg
+2026-09-23 11:39:33+0800: Loaded model /Users/ouo1010/Desktop/go_project/model.bin.gz
+2026-09-23 11:39:33+0800: Analyzing up to 16 positions at a time in parallel
+2026-09-23 11:39:33+0800: Started, ready to begin handling requests
+2026-09-23 11:42:58+0800: /Users/ouo1010/Desktop/go_project/model.bin.gz
+2026-09-23 11:42:58+0800: NN rows: 2739
+2026-09-23 11:42:58+0800: NN batches: 105
+2026-09-23 11:42:58+0800: NN avg batch size: 26.0857
+2026-09-23 11:42:59+0800: GPU -1 finishing, processed 2739 rows 105 batches
+2026-09-23 11:42:59+0800: All cleaned up, quitting

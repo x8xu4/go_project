@@ -346,6 +346,8 @@ const double ownershipDisplayThreshold = 0.60;
 const double deadStoneOwnershipThreshold = 0.80;
 const double maxDeadStoneOwnershipStdev = 0.25;
 
+bool canStartPositionAnalysis(bool isPositionAnalyzing) => !isPositionAnalyzing;
+
 int ownershipIndex(int x, int y) => y * 19 + x;
 
 bool shouldShowDeadStoneMarker({
@@ -433,6 +435,8 @@ class _GoBoardPageState extends State<GoBoardPage> {
   Offset? _positionPanelOffset;
   bool _isPositionAnalyzing = false;
   int _positionAnalysisGeneration = 0;
+  final String _positionClientId =
+      'flutter-${DateTime.now().microsecondsSinceEpoch}';
 
   static const double _positionPanelWidth = 260;
   static const double _positionPanelHeight = 252;
@@ -884,8 +888,11 @@ class _GoBoardPageState extends State<GoBoardPage> {
     }
 
     final requestGeneration = ++_positionAnalysisGeneration;
+    final requestId =
+        'position-$requestGeneration-${DateTime.now().microsecondsSinceEpoch}';
     final analyzedBaseMove = _currentMoveCount;
     final analyzedTrialMove = _isTrialMode ? _trialMoveCount : 0;
+    final expectedMoveCount = analyzedBaseMove + analyzedTrialMove;
     final extraMoves = _isTrialMode
         ? _trialMoves.take(_trialMoveCount).map((move) => [...move]).toList()
         : <List<String>>[];
@@ -899,17 +906,17 @@ class _GoBoardPageState extends State<GoBoardPage> {
     });
 
     try {
-      final response = await http
-          .post(
-            Uri.parse('http://127.0.0.1:5001/analyze_position'),
-            headers: {"Content-Type": "application/json"},
-            body: jsonEncode({
-              "sgf_content": sgfContent,
-              "move_count": analyzedBaseMove,
-              "extra_moves": extraMoves,
-            }),
-          )
-          .timeout(const Duration(seconds: 50));
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:5001/analyze_position'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "sgf_content": sgfContent,
+          "move_count": analyzedBaseMove,
+          "extra_moves": extraMoves,
+          "client_id": _positionClientId,
+          "client_request_id": requestId,
+        }),
+      );
 
       dynamic decoded;
       try {
@@ -922,6 +929,9 @@ class _GoBoardPageState extends State<GoBoardPage> {
       }
       if (response.statusCode != 200 || decoded['status'] != 'success') {
         throw Exception(decoded['message'] ?? "後端形勢分析失敗");
+      }
+      if (decoded['client_request_id'] != requestId) {
+        throw const FormatException("形勢判斷 request id 不一致");
       }
       if (decoded['perspective'] != 'black') {
         throw const FormatException("後端分析視角不是黑方，無法安全顯示結果");
@@ -990,12 +1000,22 @@ class _GoBoardPageState extends State<GoBoardPage> {
         blackCaptures: blackCaptures.toInt(),
         whiteCaptures: whiteCaptures.toInt(),
         moveCount:
-            (decoded['move_count'] as num?)?.toInt() ??
-            analyzedBaseMove + analyzedTrialMove,
+            (decoded['move_count'] as num?)?.toInt() ?? expectedMoveCount,
         visits: (decoded['visits'] as num?)?.toInt(),
       );
 
-      if (!mounted || requestGeneration != _positionAnalysisGeneration) return;
+      if (result.moveCount != expectedMoveCount) {
+        throw FormatException(
+          "形勢判斷手數不一致：預期 $expectedMoveCount，實際 ${result.moveCount}",
+        );
+      }
+
+      if (!mounted ||
+          requestGeneration != _positionAnalysisGeneration ||
+          analyzedBaseMove != _currentMoveCount ||
+          analyzedTrialMove != (_isTrialMode ? _trialMoveCount : 0)) {
+        return;
+      }
       setState(() {
         _ownership = result.ownership;
         _ownershipStdev = result.ownershipStdev;
@@ -2296,7 +2316,9 @@ class _GoBoardPageState extends State<GoBoardPage> {
             ),
             const SizedBox(width: 12),
             ElevatedButton(
-              onPressed: _isPositionAnalyzing ? null : _analyzeCurrentPosition,
+              onPressed: canStartPositionAnalysis(_isPositionAnalyzing)
+                  ? _analyzeCurrentPosition
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueGrey,
                 disabledBackgroundColor: Colors.blueGrey.withValues(
@@ -2321,7 +2343,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
                         ),
                         SizedBox(width: 7),
                         Text(
-                          "分析中",
+                          "形勢判斷中…",
                           style: TextStyle(color: Colors.white, fontSize: 13),
                         ),
                       ],

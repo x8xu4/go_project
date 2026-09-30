@@ -39,6 +39,11 @@ CONFIG_FILE = "/Users/ouo1010/Desktop/go_project/analysis.cfg"
 KATAGO_HEARTBEAT_SECONDS = 5.0
 KATAGO_IDLE_TIMEOUT_SECONDS = 90.0
 WHOLE_GAME_MAX_VISITS = 100
+WHOLE_GAME_PRIORITY = 0
+POSITION_MAX_VISITS = 500
+POSITION_PRIORITY = 10
+POSITION_ANALYSIS_THREADS = 1
+POSITION_SEARCH_THREADS = 16
 
 
 class KataGoError(RuntimeError):
@@ -49,13 +54,27 @@ class AnalysisCancelled(RuntimeError):
     pass
 
 
+class AnalysisPreempted(RuntimeError):
+    pass
+
+
 class KataGoClient:
     """共用一個 KataGo analysis 行程，並依 query id 分派回應。"""
 
-    def __init__(self, executable, model_file, config_file):
+    def __init__(
+        self,
+        executable,
+        model_file,
+        config_file,
+        *,
+        label="shared",
+        override_config=None,
+    ):
         self.executable = executable
         self.model_file = model_file
         self.config_file = config_file
+        self.label = label
+        self.override_config = override_config
         self._process = None
         self._start_lock = threading.Lock()
         self._write_lock = threading.Lock()
@@ -86,7 +105,9 @@ class KataGoClient:
                 "-config",
                 self.config_file,
             ]
-            print(f"啟動共用 KataGo: {cmd}")
+            if self.override_config:
+                cmd.extend(["-override-config", self.override_config])
+            print(f"啟動 {self.label} KataGo: {cmd}")
             process = subprocess.Popen(
                 cmd,
                 stdin=subprocess.PIPE,
@@ -225,6 +246,7 @@ class KataGoClient:
         *,
         idle_timeout=KATAGO_IDLE_TIMEOUT_SECONDS,
         cancel_event=None,
+        preempt_event=None,
     ):
         """Wait for one final response per analyzeTurns entry, with idle watchdog."""
         process = self._ensure_started()
@@ -249,6 +271,11 @@ class KataGoClient:
                         self.terminate(query_id)
                         termination_sent = True
                     raise AnalysisCancelled("分析已取消")
+                if preempt_event is not None and preempt_event.is_set():
+                    if not termination_sent:
+                        self.terminate(query_id)
+                        termination_sent = True
+                    raise AnalysisPreempted("背景分析暫時讓出資源")
                 if process.poll() is not None:
                     raise KataGoError(f"KataGo 程式已結束 (code={process.poll()})")
                 try:
@@ -289,10 +316,31 @@ class KataGoClient:
             self._process = None
         if process is not None and process.poll() is None:
             process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
 
 
-katago_client = KataGoClient(KATAGO_EXEC, MODEL_FILE, CONFIG_FILE)
+katago_client = KataGoClient(
+    KATAGO_EXEC,
+    MODEL_FILE,
+    CONFIG_FILE,
+    label="背景 16×4",
+)
+position_katago_client = KataGoClient(
+    KATAGO_EXEC,
+    MODEL_FILE,
+    CONFIG_FILE,
+    label="前景 1×16",
+    override_config=(
+        f"numAnalysisThreads={POSITION_ANALYSIS_THREADS},"
+        f"numSearchThreadsPerAnalysisThread={POSITION_SEARCH_THREADS}"
+    ),
+)
 atexit.register(katago_client.close)
+atexit.register(position_katago_client.close)
 
 # 全域分析狀態（取消機制）
 current_analysis_id = None
@@ -420,6 +468,50 @@ analysis_jobs_lock = threading.Lock()
 active_analysis_job_id = None
 
 
+@dataclass
+class PositionRequest:
+    """Tracks the newest foreground request for one Flutter client."""
+
+    query_id: str
+    request_id: str
+    cancel_event: threading.Event = field(default_factory=threading.Event)
+
+
+position_requests = {}
+position_requests_lock = threading.Lock()
+position_request_active = threading.Event()
+background_query_paused = threading.Event()
+background_query_paused.set()
+background_lane_lock = threading.Lock()
+
+
+def _begin_position_request(client_id, request_id, query_id):
+    request_state = PositionRequest(query_id=query_id, request_id=request_id)
+    with position_requests_lock:
+        previous = position_requests.get(client_id)
+        if previous is not None:
+            # Only supersede an older foreground request from the same app.
+            # The whole-game query has a different cancellation event and id.
+            previous.cancel_event.set()
+        position_requests[client_id] = request_state
+        position_request_active.set()
+    return request_state
+
+
+def _finish_position_request(client_id, query_id):
+    with position_requests_lock:
+        current = position_requests.get(client_id)
+        removed_current = False
+        if current is not None and current.query_id == query_id:
+            position_requests.pop(client_id, None)
+            removed_current = True
+        if removed_current and not position_requests:
+            # Release Metal/model resources before allowing the batch lane to
+            # restart, so the two differently tuned processes never coexist.
+            position_katago_client.close()
+            position_request_active.clear()
+
+
 def _get_analysis_job(job_id):
     with analysis_jobs_lock:
         return analysis_jobs.get(job_id)
@@ -447,19 +539,33 @@ def _register_analysis_job(sgf_content):
     return job
 
 
-def _run_analysis_job(job):
-    job.start()
-    try:
-        if not katago_client.available:
-            raise KataGoError("找不到 KataGo 執行檔、模型或設定檔")
-        game, all_moves, komi, rule_set = _parse_sgf(job.sgf_content)
-        initial_stones = get_initial_stones_from_game(game)
-        turns = list(range(len(all_moves) + 1))
-        query_id = f"whole-game-{job.job_id}"
+def _analyze_remaining_positions(
+    job,
+    all_moves,
+    turns,
+    komi,
+    rule_set,
+    initial_stones,
+):
+    print(f"背景分析開始 {job.job_id[:8]}: {len(all_moves)} 手")
+    while True:
+        if job.cancel_event.is_set():
+            raise AnalysisCancelled("分析已取消")
+        while position_request_active.is_set():
+            if job.cancel_event.wait(timeout=0.2):
+                raise AnalysisCancelled("分析已取消")
+
+        with job.lock:
+            completed_turns = set(job.position_results)
+        remaining_turns = [turn for turn in turns if turn not in completed_turns]
+        if not remaining_turns:
+            return
+
+        query_id = f"whole-game-{job.job_id}-{uuid.uuid4()}"
         query = {
             "id": query_id,
             "moves": all_moves,
-            "analyzeTurns": turns,
+            "analyzeTurns": remaining_turns,
             "rules": rule_set,
             "komi": float(komi),
             "boardXSize": 19,
@@ -468,18 +574,46 @@ def _run_analysis_job(job):
             "analysisPVLen": 8,
             "includeOwnership": False,
             "reportDuringSearchEvery": KATAGO_HEARTBEAT_SECONDS,
-            "priority": 0,
+            "priority": WHOLE_GAME_PRIORITY,
         }
         if initial_stones:
             query["initialStones"] = initial_stones
 
-        print(f"背景分析開始 {job.job_id[:8]}: {len(all_moves)} 手")
-        katago_client.query_many(
-            query,
-            turns,
-            job.record_position,
-            cancel_event=job.cancel_event,
-        )
+        background_query_paused.clear()
+        try:
+            katago_client.query_many(
+                query,
+                remaining_turns,
+                job.record_position,
+                cancel_event=job.cancel_event,
+                preempt_event=position_request_active,
+            )
+        except AnalysisPreempted:
+            print(
+                f"背景分析讓路 {job.job_id[:8]}: "
+                f"已保留 {len(job.position_results)}/{len(turns)} 個局面"
+            )
+        finally:
+            background_query_paused.set()
+
+
+def _run_analysis_job(job):
+    job.start()
+    try:
+        if not katago_client.available:
+            raise KataGoError("找不到 KataGo 執行檔、模型或設定檔")
+        game, all_moves, komi, rule_set = _parse_sgf(job.sgf_content)
+        initial_stones = get_initial_stones_from_game(game)
+        turns = list(range(len(all_moves) + 1))
+        with background_lane_lock:
+            _analyze_remaining_positions(
+                job,
+                all_moves,
+                turns,
+                komi,
+                rule_set,
+                initial_stones,
+            )
         if job.cancel_event.is_set():
             raise AnalysisCancelled("分析已取消")
 
@@ -788,6 +922,20 @@ def analyze_position():
         if not isinstance(sgf_content, str) or not sgf_content.strip():
             return jsonify({"status": "error", "message": "尚未提供 SGF 棋譜"}), 400
 
+        client_id = data.get("client_id")
+        request_id = data.get("client_request_id")
+        if not isinstance(client_id, str) or not client_id.strip():
+            client_id = "legacy-local-client"
+        if not isinstance(request_id, str) or not request_id.strip():
+            request_id = str(uuid.uuid4())
+        client_id = client_id.strip()
+        request_id = request_id.strip()
+        if len(client_id) > 128 or len(request_id) > 128:
+            return jsonify({
+                "status": "error",
+                "message": "形勢判斷 request id 過長",
+            }), 400
+
         game, all_moves, komi, rule_set = _parse_sgf(sgf_content)
         try:
             move_count = int(data.get("move_count", len(all_moves)))
@@ -809,6 +957,7 @@ def analyze_position():
             extra_moves=extra_moves,
         )
         query_id = f"position-{uuid.uuid4()}"
+        request_state = _begin_position_request(client_id, request_id, query_id)
         query = {
             "id": query_id,
             "moves": moves,
@@ -816,11 +965,11 @@ def analyze_position():
             "komi": float(komi),
             "boardXSize": 19,
             "boardYSize": 19,
-            "maxVisits": 500,
+            "maxVisits": POSITION_MAX_VISITS,
             "includeOwnership": True,
             "includeOwnershipStdev": True,
             "reportDuringSearchEvery": KATAGO_HEARTBEAT_SECONDS,
-            "priority": 10,
+            "priority": POSITION_PRIORITY,
         }
         if initial_stones:
             query["initialStones"] = initial_stones
@@ -828,7 +977,19 @@ def analyze_position():
             f"開始形勢判斷 {query_id[:17]}: "
             f"實戰 {move_count} 手、試下 {len(moves) - move_count} 手"
         )
-        response = katago_client.query(query)
+        try:
+            if not background_query_paused.wait(timeout=15):
+                raise KataGoError("背景分析未能在 15 秒內讓出資源")
+            # The foreground lane uses a single-position configuration. Close
+            # the now-idle batch process first to avoid two Metal models being
+            # resident or searching at the same time on a 16 GB machine.
+            katago_client.close()
+            response = position_katago_client.query(
+                query,
+                cancel_event=request_state.cancel_event,
+            )
+        finally:
+            _finish_position_request(client_id, query_id)
 
         ownership = response.get("ownership")
         ownership_stdev = response.get("ownershipStdev")
@@ -867,6 +1028,7 @@ def analyze_position():
 
         return jsonify({
             "status": "success",
+            "client_request_id": request_id,
             "ownership": ownership,
             "ownership_stdev": ownership_stdev,
             # analysis.cfg 固定 reportAnalysisWinratesAs = BLACK，
@@ -882,11 +1044,18 @@ def analyze_position():
             "move_count": len(moves),
             "visits": root_info.get("visits"),
         })
+    except AnalysisCancelled as exc:
+        print(f"形勢判斷已被較新的請求取代: {exc}")
+        return jsonify({
+            "status": "cancelled",
+            "message": "形勢判斷已被較新的請求取代",
+            "client_request_id": request_id if 'request_id' in locals() else None,
+        }), 409
     except ValueError as exc:
         print(f"形勢判斷請求格式錯誤: {exc}")
         return jsonify({"status": "error", "message": str(exc)}), 400
     except KataGoError as exc:
-        diagnostics = katago_client.diagnostics()
+        diagnostics = position_katago_client.diagnostics()
         print(f"形勢判斷失敗: {exc}; KataGo: {diagnostics}")
         return jsonify({
             "status": "error",

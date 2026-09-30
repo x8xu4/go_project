@@ -4,6 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/main.dart';
 
 void main() {
+  test('position analysis button only follows its own loading state', () {
+    expect(canStartPositionAnalysis(false), isTrue);
+    expect(canStartPositionAnalysis(true), isFalse);
+  });
+
   test('ownership index follows A19 to T1 row-major order', () {
     expect(ownershipIndex(0, 0), 0); // A19
     expect(ownershipIndex(18, 0), 18); // T19

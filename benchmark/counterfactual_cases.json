@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "kim-park-130",
+      "sgf": "棋譜/[金升宰]vs[朴廷桓]1764341261010001550.sgf",
+      "move_number": 130,
+      "recommended_move": "E14",
+      "expected_case_type": "negative",
+      "selection_note": "Known immediate-return counterexample: prior prototype reply was P14, far from E14."
+    },
+    {
+      "id": "park-an-160",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 160,
+      "recommended_move": "B7",
+      "expected_case_type": "suspected_positive",
+      "selection_note": "Large observed loss and cached opponent reply returned near the recommendation area."
+    },
+    {
+      "id": "park-an-168",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 168,
+      "recommended_move": "B7",
+      "expected_case_type": "suspected_positive",
+      "selection_note": "Cached opponent reply returned near recommendation while actual and recommendation were far apart."
+    },
+    {
+      "id": "park-an-173",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 173,
+      "recommended_move": "E9",
+      "expected_case_type": "suspected_positive",
+      "selection_note": "Important observed loss and cached reply near the recommendation area."
+    },
+    {
+      "id": "park-an-146",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 146,
+      "recommended_move": "B7",
+      "expected_case_type": "negative",
+      "selection_note": "Actual was reliable and cached opponent reply stayed near the actual local fight."
+    },
+    {
+      "id": "park-an-152",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 152,
+      "recommended_move": "B7",
+      "expected_case_type": "negative",
+      "selection_note": "Actual was reliable and recent/reply context remained near the actual area."
+    },
+    {
+      "id": "park-an-130",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 130,
+      "recommended_move": "B7",
+      "expected_case_type": "ambiguous",
+      "selection_note": "Large objective loss, but both cached PVs were spatially dispersed."
+    },
+    {
+      "id": "park-an-166",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 166,
+      "recommended_move": "B7",
+      "expected_case_type": "ambiguous",
+      "selection_note": "Reliable actual candidate with dispersed recent context and mixed spatial evidence."
+    },
+    {
+      "id": "park-an-176",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 176,
+      "recommended_move": "B14",
+      "expected_case_type": "ambiguous",
+      "selection_note": "Far move choice with reliable candidates but only a very small objective loss."
+    }
+  ]
+}

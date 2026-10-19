@@ -7,12 +7,17 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 
+import 'game_review.dart';
+
 //cd flutter_application_1 flutter run
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    const MaterialApp(debugShowCheckedModeBanner: false, home: GoBoardPage()),
+    const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: LogosGoBootstrap(),
+    ),
   );
 }
 
@@ -24,6 +29,176 @@ class StoneInfo {
 
 const String gtpColumns = 'ABCDEFGHJKLMNOPQRST';
 const int trialMoveNumberOffset = 10000;
+const String logosGoInstanceHeader = 'X-LogosGo-Instance';
+
+class BackendEndpointConfig {
+  final String host;
+  final int port;
+  final String? instanceToken;
+
+  const BackendEndpointConfig({
+    this.host = '127.0.0.1',
+    this.port = 5001,
+    this.instanceToken,
+  }) : assert(port > 0 && port <= 65535);
+
+  factory BackendEndpointConfig.fromNative(Object? value) {
+    if (value is! Map) {
+      throw const FormatException('本機後端未提供有效的連線設定。');
+    }
+    final host = value['host'];
+    final port = value['port'];
+    final token = value['instanceToken'];
+    if (host != '127.0.0.1' ||
+        port is! int ||
+        port < 1 ||
+        port > 65535 ||
+        token is! String) {
+      throw const FormatException('本機後端連線設定格式不正確。');
+    }
+    return BackendEndpointConfig(
+      host: host as String,
+      port: port,
+      instanceToken: token.isEmpty ? null : token,
+    );
+  }
+
+  Uri uri(String path) =>
+      Uri(scheme: 'http', host: host, port: port, path: path);
+
+  Map<String, String> headers({bool json = false}) {
+    return <String, String>{
+      if (json) 'Content-Type': 'application/json',
+      logosGoInstanceHeader: ?instanceToken,
+    };
+  }
+}
+
+typedef BackendEndpointResolver = Future<BackendEndpointConfig> Function();
+typedef LogosGoPageBuilder = Widget Function(BackendEndpointConfig endpoint);
+
+class NativeBackendEndpoint {
+  static const MethodChannel _channel = MethodChannel('logosgo/backend');
+
+  static Future<BackendEndpointConfig> resolve() async {
+    final value = await _channel.invokeMethod<Object?>(
+      'getBackendConfiguration',
+    );
+    return BackendEndpointConfig.fromNative(value);
+  }
+}
+
+class LogosGoBootstrap extends StatefulWidget {
+  final BackendEndpointResolver endpointResolver;
+  final LogosGoPageBuilder pageBuilder;
+
+  const LogosGoBootstrap({
+    super.key,
+    this.endpointResolver = NativeBackendEndpoint.resolve,
+    this.pageBuilder = _defaultLogosGoPageBuilder,
+  });
+
+  static Widget _defaultLogosGoPageBuilder(BackendEndpointConfig endpoint) {
+    return GoBoardPage(backendEndpoint: endpoint);
+  }
+
+  @override
+  State<LogosGoBootstrap> createState() => _LogosGoBootstrapState();
+}
+
+class _LogosGoBootstrapState extends State<LogosGoBootstrap> {
+  BackendEndpointConfig? _endpoint;
+  String? _error;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final endpoint = await widget.endpointResolver();
+      if (!mounted) return;
+      setState(() {
+        _endpoint = endpoint;
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is PlatformException
+          ? error.message ?? '本機後端無法啟動。'
+          : error.toString().replaceFirst('Exception: ', '');
+      setState(() {
+        _loading = false;
+        _error = message;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final endpoint = _endpoint;
+    if (endpoint != null) return widget.pageBuilder(endpoint);
+    return Scaffold(
+      backgroundColor: const Color(0xFF202124),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 460),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_loading) ...[
+                  const CircularProgressIndicator(color: Colors.amber),
+                  const SizedBox(height: 20),
+                  const Text(
+                    '正在啟動 LogosGo…',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ] else ...[
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.amber,
+                    size: 42,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'LogosGo 啟動失敗',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _error ?? '無法連接本機後端。',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, height: 1.4),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                    onPressed: _resolve,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('重試'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 int? variationDisplayMoveNumber(int storedMoveNumber, bool isTrialMode) {
   if (!isTrialMode) return storedMoveNumber;
@@ -51,6 +226,18 @@ String commentaryForDisplay(String commentary, {required bool hasVariation}) {
       .replaceAll(RegExp(r'\n{3,}'), '\n\n')
       .trim();
   return result.isEmpty ? '具體下法請查看下方推薦變化圖。' : result;
+}
+
+double objectiveWinrateLossForDisplay(Map<String, dynamic> record) {
+  return ((record['observed_winrate_loss'] ?? record['winrate_loss']) as num?)
+          ?.toDouble() ??
+      0;
+}
+
+double objectiveScoreLossForDisplay(Map<String, dynamic> record) {
+  return ((record['observed_score_loss'] ?? record['score_loss']) as num?)
+          ?.toDouble() ??
+      0;
 }
 
 class VariationStep {
@@ -390,7 +577,12 @@ class PositionAnalysisResult {
 }
 
 class GoBoardPage extends StatefulWidget {
-  const GoBoardPage({super.key});
+  final BackendEndpointConfig backendEndpoint;
+
+  const GoBoardPage({
+    super.key,
+    this.backendEndpoint = const BackendEndpointConfig(),
+  });
 
   @override
   State<GoBoardPage> createState() => _GoBoardPageState();
@@ -426,6 +618,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
   int _analysisTotalMoves = 0;
   double? _analysisEtaSeconds;
   List<Map<String, dynamic>> _moveAnalyses = [];
+  GameReviewData? _gameReview;
   final Map<int, String> _questionCommentaryCache = {};
   bool _isQuestionLoading = false;
   String? _loadedSgfContent;
@@ -502,6 +695,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
         _analysisTotalMoves = 0;
         _analysisEtaSeconds = null;
         _moveAnalyses = [];
+        _gameReview = null;
         _questionCommentaryCache.clear();
         _isQuestionLoading = false;
         _loadedSgfContent = sgfContent;
@@ -654,8 +848,8 @@ class _GoBoardPageState extends State<GoBoardPage> {
       debugPrint("建立背景整盤分析...");
       final startResponse = await http
           .post(
-            Uri.parse('http://127.0.0.1:5001/analysis/start'),
-            headers: {"Content-Type": "application/json"},
+            widget.backendEndpoint.uri('/analysis/start'),
+            headers: widget.backendEndpoint.headers(json: true),
             body: jsonEncode({"sgf_content": sgfContent}),
           )
           .timeout(const Duration(seconds: 15));
@@ -729,7 +923,10 @@ class _GoBoardPageState extends State<GoBoardPage> {
     while (mounted && generation == _analysisGeneration) {
       try {
         final response = await http
-            .get(Uri.parse('http://127.0.0.1:5001/analysis/$jobId'))
+            .get(
+              widget.backendEndpoint.uri('/analysis/$jobId'),
+              headers: widget.backendEndpoint.headers(),
+            )
             .timeout(const Duration(seconds: 10));
         if (response.statusCode != 200) {
           throw Exception("進度查詢失敗（HTTP ${response.statusCode}）");
@@ -805,6 +1002,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
         })
         .toList(growable: false);
     final rawImportant = result['important_moves'];
+    final gameReview = GameReviewData.tryParse(result['game_review']);
     setState(() {
       _winrateSpots = winrates
           .asMap()
@@ -812,6 +1010,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
           .map((entry) => FlSpot(entry.key.toDouble(), entry.value))
           .toList(growable: false);
       _moveAnalyses = moves;
+      _gameReview = gameReview;
       _blunderMoves = rawImportant is List
           ? rawImportant.whereType<num>().map((value) => value.toInt()).toList()
           : <int>[];
@@ -827,7 +1026,10 @@ class _GoBoardPageState extends State<GoBoardPage> {
   Future<void> _cancelAnalysisJob(String jobId, {bool silent = false}) async {
     try {
       await http
-          .post(Uri.parse('http://127.0.0.1:5001/analysis/$jobId/cancel'))
+          .post(
+            widget.backendEndpoint.uri('/analysis/$jobId/cancel'),
+            headers: widget.backendEndpoint.headers(),
+          )
           .timeout(const Duration(seconds: 10));
     } catch (error) {
       if (!silent) {
@@ -907,8 +1109,8 @@ class _GoBoardPageState extends State<GoBoardPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5001/analyze_position'),
-        headers: {"Content-Type": "application/json"},
+        widget.backendEndpoint.uri('/analyze_position'),
+        headers: widget.backendEndpoint.headers(json: true),
         body: jsonEncode({
           "sgf_content": sgfContent,
           "move_count": analyzedBaseMove,
@@ -1271,8 +1473,8 @@ class _GoBoardPageState extends State<GoBoardPage> {
         ((record['mover_winrate_before'] as num?)?.toDouble() ?? 0.5) * 100;
     final after =
         ((record['mover_winrate_after'] as num?)?.toDouble() ?? 0.5) * 100;
-    final wrLoss = ((record['winrate_loss'] as num?)?.toDouble() ?? 0) * 100;
-    final scoreLoss = (record['score_loss'] as num?)?.toDouble() ?? 0;
+    final wrLoss = objectiveWinrateLossForDisplay(record) * 100;
+    final scoreLoss = objectiveScoreLossForDisplay(record);
     final hasVariation = _buildVariationPlan(moveIndex) != null;
     final autoCommentary = commentaryForDisplay(
       record['auto_commentary']?.toString() ?? '',
@@ -1329,8 +1531,8 @@ class _GoBoardPageState extends State<GoBoardPage> {
     try {
       final response = await http
           .post(
-            Uri.parse('http://127.0.0.1:5001/analysis/$jobId/ask'),
-            headers: {"Content-Type": "application/json"},
+            widget.backendEndpoint.uri('/analysis/$jobId/ask'),
+            headers: widget.backendEndpoint.headers(json: true),
             body: jsonEncode({"move_number": moveIndex}),
           )
           .timeout(const Duration(seconds: 30));
@@ -1571,6 +1773,15 @@ class _GoBoardPageState extends State<GoBoardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          GameReviewSection(
+            review: _gameReview,
+            isAnalyzing: _isGameAnalyzing,
+            currentMove: _isTrialMode ? -1 : _currentMoveCount,
+            onStartReview: _startGameReview,
+            onOpenAll: _openGameReviewPanel,
+            onOpenPrimary: _openPrimaryReviewMove,
+            onSelectMove: _jumpToReviewMove,
+          ),
           Text(
             _currentCommentary,
             style: const TextStyle(
@@ -1706,6 +1917,46 @@ class _GoBoardPageState extends State<GoBoardPage> {
     _fetchLogosCommentary(safeTarget);
   }
 
+  void _jumpToReviewMove(int moveNumber) {
+    performReviewJump(
+      moveNumber: moveNumber,
+      totalMoves: _history.length,
+      isTrialMode: _isTrialMode,
+      exitTrialMode: () {
+        setState(() => _clearTrialState(restoreMoveNumbers: true));
+      },
+      jumpToOfficialMove: _jumpToMove,
+    );
+  }
+
+  void _startGameReview() {
+    final highlights = _gameReview?.highlights;
+    if (highlights == null || highlights.isEmpty) return;
+    _jumpToReviewMove(highlights.first.moveNumber);
+  }
+
+  void _openPrimaryReviewMove() {
+    final primaryMove = _gameReview?.primaryMove;
+    if (primaryMove == null) return;
+    _jumpToReviewMove(primaryMove);
+  }
+
+  Future<void> _openGameReviewPanel() async {
+    final review = _gameReview;
+    if (review == null || !mounted) return;
+    final selectedMove = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => GameReviewPanel(
+        review: review,
+        onSelectMove: (moveNumber) =>
+            Navigator.of(dialogContext).pop(moveNumber),
+        onClose: () => Navigator.of(dialogContext).pop(),
+      ),
+    );
+    if (!mounted || selectedMove == null) return;
+    _jumpToReviewMove(selectedMove);
+  }
+
   void _resetGame() {
     setState(() {
       _stones = {};
@@ -1719,6 +1970,7 @@ class _GoBoardPageState extends State<GoBoardPage> {
       _analysisTotalMoves = 0;
       _analysisEtaSeconds = null;
       _moveAnalyses = [];
+      _gameReview = null;
       _questionCommentaryCache.clear();
       _isQuestionLoading = false;
       _currentMoveCount = 0;

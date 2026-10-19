@@ -22,6 +22,18 @@ def _gtp_to_coords(coordinate, board_size):
     return row, col
 
 
+def gtp_to_board_xy(coordinate, board_size):
+    """Convert GTP to zero-based (x, y) measured from the board's top-left."""
+
+    if not isinstance(coordinate, str):
+        raise ValueError(f"無效的 GTP 座標: {coordinate!r}")
+    coords = _gtp_to_coords(coordinate, board_size)
+    if coords is None:
+        return None
+    row_from_bottom, col = coords
+    return col, board_size - 1 - row_from_bottom
+
+
 def get_initial_stones_from_game(game):
     """回傳 root setup stones，供 KataGo initialStones 使用。"""
     black_points, white_points, _ = game.get_root().get_setup_stones()

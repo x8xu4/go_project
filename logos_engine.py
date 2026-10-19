@@ -1,6 +1,10 @@
-import math
-
 import pandas as pd
+
+from structured_explanation import (
+    build_structured_explanation,
+    render_auto_commentary,
+    render_detailed_commentary,
+)
 
 
 GTP_COLUMNS = "ABCDEFGHJKLMNOPQRST"
@@ -84,94 +88,18 @@ class LogosEngine:
         return "普通手"
 
     def generate_auto_commentary(self, record):
-        """只對客觀上重要的棋步自動產生較完整說明。"""
-        title = self._importance_title(record)
-        player_name = "黑方" if record.get("player") == "B" else "白方"
-        wr_loss = float(record.get("winrate_loss", 0) or 0) * 100
-        score_loss = float(record.get("score_loss", 0) or 0)
-        best_move = record.get("best_move")
-        actual_move = record.get("actual_move")
-        if record.get("importance") == "ordinary":
-            return (
-                "【普通手】KataGo 未偵測到這手造成顯著局勢變化。"
-                "若想了解選點與推薦變化，可按「提問／為什麼？」。"
-            )
-        change = f"{player_name}約損失 {wr_loss:.1f}% 勝率、{score_loss:.1f} 目"
-        if best_move and best_move != actual_move:
-            suggestion = f"；分析前的一選是 {best_move}，實戰為 {actual_move}"
-        elif best_move == actual_move:
-            suggestion = "；實戰命中 KataGo 一選"
-        else:
-            suggestion = ""
-        return f"【{title}】{change}{suggestion}。"
+        """Render concise V1 commentary from structured objective evidence."""
+        structured = record.get("structured_explanation")
+        if not isinstance(structured, dict):
+            structured = build_structured_explanation(record)
+        return render_auto_commentary(structured)
 
     def generate_detailed_commentary(self, record):
-        """按需解說，只使用傳入的 KataGo 事實。"""
-        title = self._importance_title(record)
-        player_name = "黑方" if record.get("player") == "B" else "白方"
-        move_number = int(record.get("move_number", 0) or 0)
-        actual_move = record.get("actual_move") or "未知"
-        best_move = record.get("best_move")
-        before = float(record.get("mover_winrate_before", 0.5) or 0.5) * 100
-        after = float(record.get("mover_winrate_after", 0.5) or 0.5) * 100
-        wr_loss = float(record.get("winrate_loss", 0) or 0) * 100
-        score_loss = float(record.get("score_loss", 0) or 0)
-        search_wr_loss = float(record.get("search_winrate_loss", 0) or 0) * 100
-        search_score_loss = float(record.get("search_score_loss", 0) or 0)
-        paragraphs = [
-            f"第 {move_number} 手由{player_name}下在 {actual_move}，分類為「{title}」。",
-            (
-                f"以落子方視角看，勝率由 {before:.1f}% 變為 {after:.1f}%；"
-                f"綜合前後局面與搜尋候選，估計損失 {wr_loss:.1f}% 勝率、"
-                f"{score_loss:.1f} 目。"
-            ),
-        ]
-        if best_move == actual_move:
-            paragraphs.append(
-                "實戰著就是分析前的 KataGo 一選，因此數值變動不代表選點錯誤。"
-            )
-        elif best_move:
-            distance = self._move_distance(actual_move, best_move)
-            if distance is not None and distance >= 8:
-                comparison = (
-                    f"KataGo 較希望改下 {best_move}，兩點相距很遠，表示問題主要是"
-                    "全盤方向或脫先時機，而不只是局部次序。"
-                )
-            else:
-                comparison = (
-                    f"KataGo 較希望改下 {best_move}；推薦點與實戰點在同一局部附近，"
-                    "差異更可能來自局部次序、棋形效率或先後手。"
-                )
-            paragraphs.append(comparison)
-            if record.get("search_comparison_reliable"):
-                paragraphs.append(
-                    f"在同一次候選搜尋中，一選相對實戰著約多保留 "
-                    f"{search_wr_loss:.1f}% 勝率與 {search_score_loss:.1f} 目；"
-                    "這是直接候選比較，不是由文字模型猜測。"
-                )
-            elif record.get("actual_move_searched"):
-                paragraphs.append(
-                    "KataGo對這一手的評估資料還不夠充分，因此這裡主要根"
-                    "據落子前後的勝率與目數變化，判斷這手棋對局勢的影響。"
-                )
-            else:
-                paragraphs.append(
-                    "目前無法準確判斷這一手的具體問題，但從落子前後"
-                    "的局勢變化，可以看出這手棋造成了一定的損失。"
-                )
-        else:
-            paragraphs.append("本次 KataGo 回傳沒有可用的一選資料，無法做候選著比較。")
-        pv = record.get("best_pv")
-        if isinstance(pv, list) and pv:
-            paragraphs.append(
-                "KataGo 推薦變化的開頭是：" + " → ".join(str(move) for move in pv[:6]) + "。"
-            )
-        if math.isclose(wr_loss, 0.0, abs_tol=0.5) and score_loss < 1.0:
-            paragraphs.append(
-                "這手的客觀損失很小；若只是想比較不同下法，應把它視為風格與後續"
-                "計畫的差異，而不是硬判成好手或壞手。"
-            )
-        return "\n\n".join(paragraphs)
+        """Render detailed V1 commentary with evidence-grounded direction."""
+        structured = record.get("structured_explanation")
+        if not isinstance(structured, dict):
+            structured = build_structured_explanation(record)
+        return render_detailed_commentary(structured)
 
     def generate_commentary(self, move_data):
         """舊 endpoint 相容。"""

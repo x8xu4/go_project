@@ -1,0 +1,465 @@
+{
+  "schema_version": 1,
+  "source": "benchmark/classifier_validation/validation_records.json",
+  "katago_rerun": false,
+  "scope_limitation": "Selection uses saved real-position artifacts. Four games contain three sampled windows and one long game contains turns 128–190; these are not newly generated complete-game analyses.",
+  "game_count": 5,
+  "games": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "source_total_moves": 336,
+      "analyzed_artifact_moves": 63,
+      "artifact_scope": "existing_benchmark_artifact",
+      "important_count": 13,
+      "decisive_count": 11,
+      "candidate_count": 24,
+      "selected_count": 5,
+      "suppressed_count": 19,
+      "selected": [
+        {
+          "move_number": 132,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.09662358699999996,
+          "observed_score_loss": 1.27465336,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "questionable",
+            "note": "正式 combined basis 略高於同群第 130 手，但 observed swing 較小；仍達 decisive，屬近似值排序邊界。"
+          }
+        },
+        {
+          "move_number": 139,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.48928328800000004,
+          "observed_score_loss": 6.70206945,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "observed 勝率下降 48.9 個百分點，合理作為主要轉折。"
+          }
+        },
+        {
+          "move_number": 148,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.3447422339999999,
+          "observed_score_loss": 4.4131749330000005,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "additional_strong_decisive_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "同一長群中的第二個非相鄰強 decisive，客觀變化明顯。"
+          }
+        },
+        {
+          "move_number": 160,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.649620589,
+          "observed_score_loss": 11.32191682,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "樣本內最大 observed swing，且成功壓縮相鄰重複手。"
+          }
+        },
+        {
+          "move_number": 173,
+          "importance": "important",
+          "observed_winrate_loss": 0.18310783399999997,
+          "observed_score_loss": 5.531102499999999,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "important_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "獨立 important cluster 的最強手，與前一重點有足夠間距。"
+          }
+        }
+      ],
+      "suppressed": [
+        {
+          "move_number": 130,
+          "importance": "decisive",
+          "suppressed_by_move": 132,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 140,
+          "importance": "decisive",
+          "suppressed_by_move": 139,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 141,
+          "importance": "decisive",
+          "suppressed_by_move": 139,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 144,
+          "importance": "important",
+          "suppressed_by_move": 148,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 145,
+          "importance": "important",
+          "suppressed_by_move": 148,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 146,
+          "importance": "important",
+          "suppressed_by_move": 148,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 147,
+          "importance": "important",
+          "suppressed_by_move": 148,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 149,
+          "importance": "important",
+          "suppressed_by_move": 148,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 150,
+          "importance": "important",
+          "suppressed_by_move": 148,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 152,
+          "importance": "decisive",
+          "suppressed_by_move": 148,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 159,
+          "importance": "decisive",
+          "suppressed_by_move": 160,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 161,
+          "importance": "decisive",
+          "suppressed_by_move": 160,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 162,
+          "importance": "decisive",
+          "suppressed_by_move": 160,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 163,
+          "importance": "important",
+          "suppressed_by_move": 160,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 164,
+          "importance": "important",
+          "suppressed_by_move": 160,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 171,
+          "importance": "important",
+          "suppressed_by_move": 173,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 174,
+          "importance": "important",
+          "suppressed_by_move": 173,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 189,
+          "importance": "important",
+          "suppressed_by_move": null,
+          "reason": "review_target_capacity"
+        },
+        {
+          "move_number": 190,
+          "importance": "important",
+          "suppressed_by_move": 189,
+          "reason": "nearby_lower_severity"
+        }
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "source_total_moves": 135,
+      "analyzed_artifact_moves": 30,
+      "artifact_scope": "phase3c_sampled_analysis",
+      "important_count": 2,
+      "decisive_count": 0,
+      "candidate_count": 2,
+      "selected_count": 2,
+      "suppressed_count": 0,
+      "selected": [
+        {
+          "move_number": 66,
+          "importance": "important",
+          "observed_winrate_loss": 0.14333665699999998,
+          "observed_score_loss": 1.027984883,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "important_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "observed 勝率下降 14.3 個百分點，且沒有附近重複候選。"
+          }
+        },
+        {
+          "move_number": 126,
+          "importance": "important",
+          "observed_winrate_loss": 2.176399999997969e-05,
+          "observed_score_loss": 8.379510099999997,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "important_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "observed 目數下降 8.38 目，與第 66 手屬不同階段。"
+          }
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "source_total_moves": 137,
+      "analyzed_artifact_moves": 30,
+      "artifact_scope": "phase3c_sampled_analysis",
+      "important_count": 0,
+      "decisive_count": 1,
+      "candidate_count": 1,
+      "selected_count": 1,
+      "suppressed_count": 0,
+      "selected": [
+        {
+          "move_number": 68,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.4503711020000001,
+          "observed_score_loss": 4.261784853,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "唯一 decisive，observed 勝率下降 45.0 個百分點。"
+          }
+        }
+      ],
+      "suppressed": []
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "source_total_moves": 151,
+      "analyzed_artifact_moves": 30,
+      "artifact_scope": "phase3c_sampled_analysis",
+      "important_count": 5,
+      "decisive_count": 2,
+      "candidate_count": 7,
+      "selected_count": 3,
+      "suppressed_count": 4,
+      "selected": [
+        {
+          "move_number": 77,
+          "importance": "important",
+          "observed_winrate_loss": 0.199759016,
+          "observed_score_loss": 2.310573877,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "important_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "第 74～80 手密集群中客觀 severity 最高，避免列出五個重複重點。"
+          }
+        },
+        {
+          "move_number": 138,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.0,
+          "observed_score_loss": 12.084947099999999,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "observed 目數下降 12.08 目，達 decisive。"
+          }
+        },
+        {
+          "move_number": 144,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.024345948000000006,
+          "observed_score_loss": 26.8993934,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "observed 目數下降 26.9 目，且與第 138 手距離超出 nearby window。"
+          }
+        }
+      ],
+      "suppressed": [
+        {
+          "move_number": 74,
+          "importance": "important",
+          "suppressed_by_move": 77,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 76,
+          "importance": "important",
+          "suppressed_by_move": 77,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 79,
+          "importance": "important",
+          "suppressed_by_move": 77,
+          "reason": "nearby_lower_severity"
+        },
+        {
+          "move_number": 80,
+          "importance": "important",
+          "suppressed_by_move": 77,
+          "reason": "nearby_lower_severity"
+        }
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "source_total_moves": 134,
+      "analyzed_artifact_moves": 30,
+      "artifact_scope": "phase3c_sampled_analysis",
+      "important_count": 1,
+      "decisive_count": 1,
+      "candidate_count": 2,
+      "selected_count": 2,
+      "suppressed_count": 0,
+      "selected": [
+        {
+          "move_number": 119,
+          "importance": "decisive",
+          "observed_winrate_loss": 0.0006154019900000002,
+          "observed_score_loss": 19.446995,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "decisive_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "observed 目數下降 19.45 目，合理作為 decisive 重點。"
+          }
+        },
+        {
+          "move_number": 127,
+          "importance": "important",
+          "observed_winrate_loss": 0.0,
+          "observed_score_loss": 11.1672795,
+          "recommendation_available": true,
+          "variation_available": true,
+          "selection_reasons": [
+            "important_move",
+            "large_observed_change",
+            "reliable_recommendation",
+            "variation_available",
+            "highest_severity_in_cluster"
+          ],
+          "manual_review": {
+            "label": "reasonable",
+            "note": "observed 目數下降 11.17 目，距離前一重點 8 手。"
+          }
+        }
+      ],
+      "suppressed": []
+    }
+  ]
+}

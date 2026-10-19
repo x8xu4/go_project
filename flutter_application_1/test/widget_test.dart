@@ -1,12 +1,148 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_application_1/main.dart';
 
 void main() {
+  test('native backend endpoint validates loopback configuration', () {
+    final endpoint = BackendEndpointConfig.fromNative({
+      'host': '127.0.0.1',
+      'port': 53123,
+      'instanceToken': 'launch-token',
+    });
+
+    expect(endpoint.port, 53123);
+    expect(endpoint.instanceToken, 'launch-token');
+    expect(
+      () => BackendEndpointConfig.fromNative({
+        'host': '192.0.2.1',
+        'port': 53123,
+        'instanceToken': 'launch-token',
+      }),
+      throwsFormatException,
+    );
+  });
+
+  testWidgets('bootstrap shows startup state then passes endpoint to page', (
+    tester,
+  ) async {
+    final completion = Completer<BackendEndpointConfig>();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LogosGoBootstrap(
+          endpointResolver: () => completion.future,
+          pageBuilder: (endpoint) => Text('ready:${endpoint.port}'),
+        ),
+      ),
+    );
+
+    expect(find.text('正在啟動 LogosGo…'), findsOneWidget);
+    completion.complete(const BackendEndpointConfig(port: 53123));
+    await tester.pump();
+    expect(find.text('ready:53123'), findsOneWidget);
+  });
+
+  testWidgets('bootstrap provides a useful startup error and retry', (
+    tester,
+  ) async {
+    var attempts = 0;
+    Future<BackendEndpointConfig> resolve() async {
+      attempts += 1;
+      if (attempts == 1) throw Exception('測試啟動錯誤');
+      return const BackendEndpointConfig(port: 53124);
+    }
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LogosGoBootstrap(
+          endpointResolver: resolve,
+          pageBuilder: (endpoint) => Text('ready:${endpoint.port}'),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('LogosGo 啟動失敗'), findsOneWidget);
+    expect(find.text('測試啟動錯誤'), findsOneWidget);
+    await tester.tap(find.text('重試'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('ready:53124'), findsOneWidget);
+  });
+
+  test('backend endpoint config keeps the development default centralized', () {
+    const endpoint = BackendEndpointConfig();
+
+    expect(
+      endpoint.uri('/analysis/start').toString(),
+      'http://127.0.0.1:5001/analysis/start',
+    );
+    expect(
+      endpoint.uri('/analysis/job-123').toString(),
+      'http://127.0.0.1:5001/analysis/job-123',
+    );
+    expect(
+      endpoint.uri('/analysis/job-123/cancel').toString(),
+      'http://127.0.0.1:5001/analysis/job-123/cancel',
+    );
+    expect(
+      endpoint.uri('/analysis/job-123/ask').toString(),
+      'http://127.0.0.1:5001/analysis/job-123/ask',
+    );
+    expect(
+      endpoint.uri('/analyze_position').toString(),
+      'http://127.0.0.1:5001/analyze_position',
+    );
+  });
+
+  test(
+    'backend endpoint config supports an arbitrary local port and token',
+    () {
+      const endpoint = BackendEndpointConfig(
+        port: 53123,
+        instanceToken: 'runner-instance-token',
+      );
+
+      expect(
+        endpoint.uri('/health').toString(),
+        'http://127.0.0.1:53123/health',
+      );
+      expect(endpoint.headers(), {
+        logosGoInstanceHeader: 'runner-instance-token',
+      });
+      expect(endpoint.headers(json: true), {
+        'Content-Type': 'application/json',
+        logosGoInstanceHeader: 'runner-instance-token',
+      });
+    },
+  );
+
   test('position analysis button only follows its own loading state', () {
     expect(canStartPositionAnalysis(false), isTrue);
     expect(canStartPositionAnalysis(true), isFalse);
+  });
+
+  test(
+    'objective loss prefers observed loss over candidate comparison gap',
+    () {
+      final record = <String, dynamic>{
+        'observed_winrate_loss': 0.031,
+        'observed_score_loss': 1.4,
+        'winrate_loss': 0.077,
+        'score_loss': 2.8,
+      };
+
+      expect(objectiveWinrateLossForDisplay(record), 0.031);
+      expect(objectiveScoreLossForDisplay(record), 1.4);
+    },
+  );
+
+  test('objective loss supports legacy payload fallback', () {
+    final record = <String, dynamic>{'winrate_loss': 0.077, 'score_loss': 2.8};
+
+    expect(objectiveWinrateLossForDisplay(record), 0.077);
+    expect(objectiveScoreLossForDisplay(record), 2.8);
   });
 
   test('ownership index follows A19 to T1 row-major order', () {

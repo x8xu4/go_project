@@ -9,3 +9,22 @@ katago.exe
 __pycache__/
 .DS_Store
 *.pyc
+
+# Phase 6B standalone backend build outputs
+/packaging/macos/build/
+/packaging/macos/dist/
+/packaging/windows/build/
+/packaging/windows/dist/
+
+# Runtime logs and large private distribution archives are generated artifacts.
+/analysis_logs/
+/release/**/*.zip
+# Project report figures
+/圖一.jpeg
+/圖二.jpeg
+/圖三.png
+/圖四.png
+/圖五.png
+/圖六.png
+/圖七.png
+/圖八.png

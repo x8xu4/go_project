@@ -1,0 +1,64 @@
+{
+  "product": "LogosGo",
+  "version": "1.0.0",
+  "display_version": "V1.0.0",
+  "build_number": "1",
+  "release_channel": "private macOS release",
+  "release_date": "2026-10-13",
+  "supported_architectures": [
+    "arm64"
+  ],
+  "minimum_macos": "26.0",
+  "bundle_identifier": "com.logosgo.desktop",
+  "kata_go": {
+    "version": "1.16.4",
+    "backend": "Metal"
+  },
+  "backend_packaging": "PyInstaller onedir",
+  "app_uncompressed_size_kib": 355616,
+  "source": {
+    "base_commit": "ad270fccb4f881897e8a8d8ec7924601b42f10b2",
+    "state": "accepted working tree with Phase 1-6D changes; local release commit and tag pending owner selection of historical validation artifacts"
+  },
+  "analytical_settings": {
+    "canonical_perspective": "BLACK",
+    "whole_game": {
+      "max_visits": 100,
+      "analysis_threads": 16,
+      "search_threads_per_analysis": 4,
+      "pv_length": 8,
+      "ownership": false
+    },
+    "position_judgment": {
+      "max_visits": 500,
+      "analysis_threads": 1,
+      "search_threads_per_analysis": 16,
+      "ownership": true,
+      "ownership_stdev": true
+    }
+  },
+  "test_results": {
+    "python": 256,
+    "flutter": 59,
+    "runner": 4,
+    "flutter_analyze_preexisting_diagnostics": 13,
+    "packaged_e2e": "pass",
+    "archive_round_trip": "pass"
+  },
+  "major_runtime_components": [
+    "Flutter macOS arm64 application",
+    "PyInstaller Python 3.14 backend",
+    "KataGo 1.16.4 Metal arm64",
+    "bundled libzip/liblzma/libzstd",
+    "KataGo neural-network model",
+    "analysis.cfg",
+    "LogosGo production commentary corpus"
+  ],
+  "known_limitations": [
+    "Apple Silicon only",
+    "macOS 26.0 or later",
+    "private ad-hoc signature; not notarized",
+    "commentary abstains when evidence is insufficient",
+    "no Windows release"
+  ]
+}

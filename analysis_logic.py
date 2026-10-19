@@ -5,8 +5,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from explanation_classifier import classify_explanation
+from explanation_features import build_explanation_features
+from structured_explanation import build_structured_explanation
+
 
 GTP_COLUMNS = "ABCDEFGHJKLMNOPQRST"
+EXPLANATION_EVIDENCE_SCHEMA_VERSION = 1
+EXPLANATION_EVIDENCE_TOP_K = 8
+EXPLANATION_EVIDENCE_PV_MAX_MOVES = 8
+KATAGO_VALUE_PERSPECTIVE = "black"
 
 
 @dataclass(frozen=True)
@@ -91,7 +99,169 @@ def _is_valid_gtp_move(value: Any) -> bool:
 
 def _optional_float(mapping: dict[str, Any], key: str) -> float | None:
     value = mapping.get(key)
-    return float(value) if isinstance(value, (int, float)) else None
+    return (
+        float(value)
+        if isinstance(value, (int, float)) and not isinstance(value, bool)
+        else None
+    )
+
+
+def _optional_int(mapping: dict[str, Any], key: str) -> int | None:
+    value = mapping.get(key)
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return None
+    integer = int(value)
+    return integer if integer >= 0 else None
+
+
+def _bounded_pv(candidate: dict[str, Any]) -> list[str]:
+    raw_pv = candidate.get("pv")
+    if not isinstance(raw_pv, list):
+        return []
+    return [
+        move.upper()
+        for move in raw_pv[:EXPLANATION_EVIDENCE_PV_MAX_MOVES]
+        if isinstance(move, str) and _is_valid_gtp_move(move)
+    ]
+
+
+def _minimum_reliable_visits(root_visits: int) -> int:
+    """Return the shared minimum search evidence for one candidate."""
+
+    return max(3, int(max(0, root_visits) * 0.05))
+
+
+def _candidate_reliability(
+    candidate: dict[str, Any] | None, root_visits: int
+) -> tuple[bool, str]:
+    if candidate is None:
+        return False, "missing_candidate"
+    visits = _optional_int(candidate, "visits")
+    if visits is None or visits < _minimum_reliable_visits(root_visits):
+        return False, "insufficient_visits"
+    return True, "sufficient_visits"
+
+
+def _candidate_evidence(
+    candidate: dict[str, Any] | None,
+    root_visits: int,
+    *,
+    missing_move: str | None = None,
+) -> dict[str, Any]:
+    reliable, reason = _candidate_reliability(candidate, root_visits)
+    if candidate is None:
+        return {
+            "found": False,
+            "move": missing_move.upper() if isinstance(missing_move, str) else None,
+            "order": None,
+            "visits": None,
+            "prior": None,
+            "winrate_black": None,
+            "score_lead_black": None,
+            "pv": [],
+            "reliable": reliable,
+            "reliability_reason": reason,
+        }
+
+    move = candidate.get("move")
+    return {
+        "found": True,
+        "move": move.upper() if isinstance(move, str) else None,
+        "order": _optional_int(candidate, "order"),
+        "visits": _optional_int(candidate, "visits"),
+        "prior": _optional_float(candidate, "prior"),
+        "winrate_black": _optional_float(candidate, "winrate"),
+        "score_lead_black": _optional_float(candidate, "scoreLead"),
+        "pv": _bounded_pv(candidate),
+        "reliable": reliable,
+        "reliability_reason": reason,
+    }
+
+
+def _valid_move_infos(position: dict[str, Any]) -> list[dict[str, Any]]:
+    raw_move_infos = position.get("moveInfos")
+    if not isinstance(raw_move_infos, list):
+        return []
+    return [
+        item
+        for item in raw_move_infos
+        if isinstance(item, dict) and _is_valid_gtp_move(item.get("move"))
+    ]
+
+
+def _candidate_sort_key(
+    indexed_candidate: tuple[int, dict[str, Any]],
+) -> tuple[bool, int, int]:
+    index, candidate = indexed_candidate
+    order = _optional_int(candidate, "order")
+    return order is None, order if order is not None else index, index
+
+
+def _ranked_candidates(move_infos: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Use KataGo's explicit order, with response order only as a safe fallback."""
+
+    return [
+        candidate
+        for _, candidate in sorted(enumerate(move_infos), key=_candidate_sort_key)
+    ]
+
+
+def _recommended_candidate(
+    move_infos: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    ranked = _ranked_candidates(move_infos)
+    return ranked[0] if ranked else None
+
+
+def _root_visits(root_info: dict[str, Any]) -> int:
+    return _optional_int(root_info, "visits") or 0
+
+
+def _build_explanation_evidence(
+    before: dict[str, Any],
+    after: dict[str, Any],
+    before_root: dict[str, Any],
+    after_root: dict[str, Any],
+    actual_move: str,
+) -> dict[str, Any]:
+    before_root_visits = _root_visits(before_root)
+    after_root_visits = _root_visits(after_root)
+    before_candidates = _valid_move_infos(before)
+    after_candidates = _valid_move_infos(after)
+    ranked_before = _ranked_candidates(before_candidates)
+    recommended = ranked_before[0] if ranked_before else None
+    actual = _find_actual_move_info(before_candidates, actual_move)
+    opponent_best_response = _recommended_candidate(after_candidates)
+
+    return {
+        "schema_version": EXPLANATION_EVIDENCE_SCHEMA_VERSION,
+        "value_perspective": KATAGO_VALUE_PERSPECTIVE,
+        "before": {
+            "root_visits": before_root_visits,
+            "minimum_reliable_visits": _minimum_reliable_visits(
+                before_root_visits
+            ),
+            "recommended": _candidate_evidence(
+                recommended, before_root_visits
+            ),
+            "actual": _candidate_evidence(
+                actual, before_root_visits, missing_move=actual_move
+            ),
+            "candidates": [
+                _candidate_evidence(candidate, before_root_visits)
+                for candidate in ranked_before[:EXPLANATION_EVIDENCE_TOP_K]
+            ],
+        },
+        "after": {
+            "root_visits": after_root_visits,
+            "minimum_reliable_visits": _minimum_reliable_visits(
+                after_root_visits
+            ),
+            "opponent_best_response": _candidate_evidence(
+                opponent_best_response, after_root_visits
+            ),
+        },
+    }
 
 
 def build_move_analyses(
@@ -99,6 +269,7 @@ def build_move_analyses(
     position_results: dict[int, dict[str, Any]],
     *,
     thresholds: ImportanceThresholds = IMPORTANCE_THRESHOLDS,
+    board_size: int = 19,
 ) -> list[dict[str, Any]]:
     """Build one factual record per played move from before/after analyses."""
 
@@ -146,20 +317,33 @@ def build_move_analyses(
         best_move = best_info.get("move")
 
         raw_pv = best_info.get("pv")
-        pv = [str(move).upper() for move in raw_pv[:8]] if isinstance(raw_pv, list) else []
-        best_candidate_visits = int(best_info.get("visits", 0) or 0)
+        pv = (
+            [
+                str(move).upper()
+                for move in raw_pv[:EXPLANATION_EVIDENCE_PV_MAX_MOVES]
+            ]
+            if isinstance(raw_pv, list)
+            else []
+        )
+        best_candidate_visits = _optional_int(best_info, "visits") or 0
 
         search_wr_loss = 0.0
         search_score_loss = 0.0
         actual_candidate_visits = (
-            int(actual_info.get("visits", 0)) if actual_info is not None else 0
+            (_optional_int(actual_info, "visits") or 0)
+            if actual_info is not None
+            else 0
         )
-        root_visits = int(before_root.get("visits", 0) or 0)
-        minimum_reliable_visits = max(3, int(root_visits * 0.05))
+        root_visits = _root_visits(before_root)
+        minimum_reliable_visits = _minimum_reliable_visits(root_visits)
         search_comparison_reliable = (
             actual_info is not None
             and bool(best_info)
             and actual_candidate_visits >= minimum_reliable_visits
+            and _optional_float(best_info, "winrate") is not None
+            and _optional_float(actual_info, "winrate") is not None
+            and _optional_float(best_info, "scoreLead") is not None
+            and _optional_float(actual_info, "scoreLead") is not None
         )
         if search_comparison_reliable:
             best_wr = _mover_value(
@@ -191,9 +375,25 @@ def build_move_analyses(
             winrate_loss, score_loss, thresholds=thresholds
         )
         crossed_even = (mover_wr_before >= 0.5) != (mover_wr_after >= 0.5)
+        explanation_evidence = _build_explanation_evidence(
+            before,
+            after,
+            before_root,
+            after_root,
+            actual_move,
+        )
+        explanation_features = build_explanation_features(
+            explanation_evidence,
+            all_moves,
+            move_number,
+            board_size=board_size,
+        )
+        explanation_classification = classify_explanation(
+            explanation_evidence,
+            explanation_features,
+        )
 
-        records.append(
-            {
+        record = {
                 "move_number": move_number,
                 "player": player,
                 "actual_move": actual_move,
@@ -229,8 +429,12 @@ def build_move_analyses(
                 "crossed_even": crossed_even,
                 "visits_before": before_root.get("visits"),
                 "visits_after": after_root.get("visits"),
+                "explanation_evidence": explanation_evidence,
+                "explanation_features": explanation_features,
+                "explanation_classification": explanation_classification,
             }
-        )
+        record["structured_explanation"] = build_structured_explanation(record)
+        records.append(record)
     return records
 
 

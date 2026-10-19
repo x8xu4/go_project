@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "reviews": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "label": "acceptable",
+      "note": "primary 與兩項 largest observed change 都指向第 160 手，文字自然；驗證資料只涵蓋第 128～190 手，不能把此人工標記視為完整 336 手內容審查。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "label": "natural",
+      "note": "兩個重點的 primary、勝率最大變化與目數最大變化分工清楚，沒有把兩種指標混合。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "label": "natural",
+      "note": "單一 highlight 文法自然，沒有使用「其中」，也沒有補入額外位置。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "label": "natural",
+      "note": "第 144 手作為 primary，勝率最大變化則保留第 77 手，正確呈現不同 objective evidence。"
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "label": "questionable",
+      "note": "摘要本身正確且 primary 合理，但勝率最大 observed drop 僅約 0.1 個百分點；數學上成立，產品資訊價值偏低，後續可觀察但本階段不新增門檻。"
+    }
+  ]
+}

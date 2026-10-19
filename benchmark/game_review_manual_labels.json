@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "reviews": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 132,
+      "label": "questionable",
+      "note": "正式 combined basis 略高於同群第 130 手，但 observed swing 較小；仍達 decisive，屬近似值排序邊界。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 139,
+      "label": "reasonable",
+      "note": "observed 勝率下降 48.9 個百分點，合理作為主要轉折。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 148,
+      "label": "reasonable",
+      "note": "同一長群中的第二個非相鄰強 decisive，客觀變化明顯。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 160,
+      "label": "reasonable",
+      "note": "樣本內最大 observed swing，且成功壓縮相鄰重複手。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 173,
+      "label": "reasonable",
+      "note": "獨立 important cluster 的最強手，與前一重點有足夠間距。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "move_number": 66,
+      "label": "reasonable",
+      "note": "observed 勝率下降 14.3 個百分點，且沒有附近重複候選。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "move_number": 126,
+      "label": "reasonable",
+      "note": "observed 目數下降 8.38 目，與第 66 手屬不同階段。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "move_number": 68,
+      "label": "reasonable",
+      "note": "唯一 decisive，observed 勝率下降 45.0 個百分點。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 77,
+      "label": "reasonable",
+      "note": "第 74～80 手密集群中客觀 severity 最高，避免列出五個重複重點。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 138,
+      "label": "reasonable",
+      "note": "observed 目數下降 12.08 目，達 decisive。"
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 144,
+      "label": "reasonable",
+      "note": "observed 目數下降 26.9 目，且與第 138 手距離超出 nearby window。"
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 119,
+      "label": "reasonable",
+      "note": "observed 目數下降 19.45 目，合理作為 decisive 重點。"
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 127,
+      "label": "reasonable",
+      "note": "observed 目數下降 11.17 目，距離前一重點 8 手。"
+    }
+  ]
+}

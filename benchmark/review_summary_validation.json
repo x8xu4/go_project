@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "source": "benchmark/classifier_validation/validation_records.json",
+  "phase4b_source": "benchmark/game_review_validation.json",
+  "katago_rerun": false,
+  "scope_limitation": "Selection uses saved real-position artifacts. Four games contain three sampled windows and one long game contains turns 128–190; these are not newly generated complete-game analyses.",
+  "game_count": 5,
+  "games": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "selected_highlight_count": 5,
+      "primary_move": 160,
+      "largest_winrate_change_move": 160,
+      "largest_score_change_move": 160,
+      "phase_distribution": {
+        "opening": 0,
+        "middle": 5,
+        "endgame": 0,
+        "unknown": 0
+      },
+      "review_order": [
+        132,
+        139,
+        148,
+        160,
+        173
+      ],
+      "auto_summary": "本局整理出 5 個主要復盤重點，包含 4 個明顯局勢轉折。\n若只先看一處，建議從第 160 手開始。\n重點分布在第 132、139、148、160、173 手。",
+      "detailed_summary": "本局共選出 5 個主要復盤位置：第 132、139、148、160、173 手。\n\n第 160 手依目前的客觀評估變化排序，是最值得優先回看的位置。\n\n在已選重點中，第 160 手落子後的勝率估計下降幅度最大，約 65.0 個百分點。第 160 手落子後的目數評估下降幅度最大，約 11.3 目。\n\n這些重點的棋局階段分布為：中盤 5 個。\n\n建議依棋局順序查看：第 132、139、148、160、173 手。每個位置都可回到既有單手分析查看客觀變化；若有可靠推薦，也可查看相應內容。\n\n其中 5 個位置保存了可靠的推薦變化，可在棋盤上查看。\n\n目前總結以客觀局勢變化與 KataGo 推薦為主，不對整盤棋推測尚未被證據支持的棋理模式。",
+      "limitations": [
+        "specific_go_patterns_not_established"
+      ],
+      "phase4b_selection_unchanged": true,
+      "manual_review": {
+        "label": "acceptable",
+        "note": "primary 與兩項 largest observed change 都指向第 160 手，文字自然；驗證資料只涵蓋第 128～190 手，不能把此人工標記視為完整 336 手內容審查。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "selected_highlight_count": 2,
+      "primary_move": 126,
+      "largest_winrate_change_move": 66,
+      "largest_score_change_move": 126,
+      "phase_distribution": {
+        "opening": 0,
+        "middle": 1,
+        "endgame": 1,
+        "unknown": 0
+      },
+      "review_order": [
+        66,
+        126
+      ],
+      "auto_summary": "本局整理出 2 個主要復盤重點。\n若只先看一處，建議從第 126 手開始。\n重點分布在第 66、126 手。",
+      "detailed_summary": "本局共選出 2 個主要復盤位置：第 66、126 手。\n\n第 126 手依目前的客觀評估變化排序，是最值得優先回看的位置。\n\n在已選重點中，第 66 手落子後的勝率估計下降幅度最大，約 14.3 個百分點。第 126 手落子後的目數評估下降幅度最大，約 8.4 目。\n\n這些重點的棋局階段分布為：中盤 1 個、後段 1 個。\n\n建議依棋局順序查看：第 66、126 手。每個位置都可回到既有單手分析查看客觀變化；若有可靠推薦，也可查看相應內容。\n\n其中 2 個位置保存了可靠的推薦變化，可在棋盤上查看。\n\n目前總結以客觀局勢變化與 KataGo 推薦為主，不對整盤棋推測尚未被證據支持的棋理模式。",
+      "limitations": [
+        "limited_highlights",
+        "specific_go_patterns_not_established"
+      ],
+      "phase4b_selection_unchanged": true,
+      "manual_review": {
+        "label": "natural",
+        "note": "兩個重點的 primary、勝率最大變化與目數最大變化分工清楚，沒有把兩種指標混合。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "selected_highlight_count": 1,
+      "primary_move": 68,
+      "largest_winrate_change_move": 68,
+      "largest_score_change_move": 68,
+      "phase_distribution": {
+        "opening": 0,
+        "middle": 1,
+        "endgame": 0,
+        "unknown": 0
+      },
+      "review_order": [
+        68
+      ],
+      "auto_summary": "本局整理出 1 個主要復盤重點，位於第 68 手。建議先從這一手開始查看。",
+      "detailed_summary": "本局共選出 1 個主要復盤位置：第 68 手。\n\n依目前的客觀評估變化，建議優先回看這一手。\n\n在已選重點中，第 68 手落子後的勝率估計下降幅度最大，約 45.0 個百分點。第 68 手落子後的目數評估下降幅度最大，約 4.3 目。\n\n這些重點的棋局階段分布為：中盤 1 個。\n\n建議依棋局順序查看：第 68 手。每個位置都可回到既有單手分析查看客觀變化；若有可靠推薦，也可查看相應內容。\n\n此位置保存了可靠的推薦變化，可在棋盤上查看。\n\n目前總結以客觀局勢變化與 KataGo 推薦為主，不對整盤棋推測尚未被證據支持的棋理模式。",
+      "limitations": [
+        "limited_highlights",
+        "specific_go_patterns_not_established"
+      ],
+      "phase4b_selection_unchanged": true,
+      "manual_review": {
+        "label": "natural",
+        "note": "單一 highlight 文法自然，沒有使用「其中」，也沒有補入額外位置。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "selected_highlight_count": 3,
+      "primary_move": 144,
+      "largest_winrate_change_move": 77,
+      "largest_score_change_move": 144,
+      "phase_distribution": {
+        "opening": 0,
+        "middle": 1,
+        "endgame": 2,
+        "unknown": 0
+      },
+      "review_order": [
+        77,
+        138,
+        144
+      ],
+      "auto_summary": "本局整理出 3 個主要復盤重點，包含 2 個明顯局勢轉折。\n若只先看一處，建議從第 144 手開始。\n重點分布在第 77、138、144 手。",
+      "detailed_summary": "本局共選出 3 個主要復盤位置：第 77、138、144 手。\n\n第 144 手依目前的客觀評估變化排序，是最值得優先回看的位置。\n\n在已選重點中，第 77 手落子後的勝率估計下降幅度最大，約 20.0 個百分點。第 144 手落子後的目數評估下降幅度最大，約 26.9 目。\n\n這些重點的棋局階段分布為：中盤 1 個、後段 2 個。\n\n建議依棋局順序查看：第 77、138、144 手。每個位置都可回到既有單手分析查看客觀變化；若有可靠推薦，也可查看相應內容。\n\n其中 3 個位置保存了可靠的推薦變化，可在棋盤上查看。\n\n目前總結以客觀局勢變化與 KataGo 推薦為主，不對整盤棋推測尚未被證據支持的棋理模式。",
+      "limitations": [
+        "specific_go_patterns_not_established"
+      ],
+      "phase4b_selection_unchanged": true,
+      "manual_review": {
+        "label": "natural",
+        "note": "第 144 手作為 primary，勝率最大變化則保留第 77 手，正確呈現不同 objective evidence。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "selected_highlight_count": 2,
+      "primary_move": 119,
+      "largest_winrate_change_move": 119,
+      "largest_score_change_move": 119,
+      "phase_distribution": {
+        "opening": 0,
+        "middle": 0,
+        "endgame": 2,
+        "unknown": 0
+      },
+      "review_order": [
+        119,
+        127
+      ],
+      "auto_summary": "本局整理出 2 個主要復盤重點，包含 1 個明顯局勢轉折。\n若只先看一處，建議從第 119 手開始。\n重點分布在第 119、127 手。",
+      "detailed_summary": "本局共選出 2 個主要復盤位置：第 119、127 手。\n\n第 119 手依目前的客觀評估變化排序，是最值得優先回看的位置。\n\n在已選重點中，第 119 手落子後的勝率估計下降幅度最大，約 0.1 個百分點。第 119 手落子後的目數評估下降幅度最大，約 19.4 目。\n\n這些重點的棋局階段分布為：後段 2 個。\n\n建議依棋局順序查看：第 119、127 手。每個位置都可回到既有單手分析查看客觀變化；若有可靠推薦，也可查看相應內容。\n\n其中 2 個位置保存了可靠的推薦變化，可在棋盤上查看。\n\n目前總結以客觀局勢變化與 KataGo 推薦為主，不對整盤棋推測尚未被證據支持的棋理模式。",
+      "limitations": [
+        "limited_highlights",
+        "specific_go_patterns_not_established"
+      ],
+      "phase4b_selection_unchanged": true,
+      "manual_review": {
+        "label": "questionable",
+        "note": "摘要本身正確且 primary 合理，但勝率最大 observed drop 僅約 0.1 個百分點；數學上成立，產品資訊價值偏低，後續可觀察但本階段不新增門檻。"
+      }
+    }
+  ]
+}

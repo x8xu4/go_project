@@ -1,0 +1,1113 @@
+{
+  "schema_version": 1,
+  "sgf_count": 5,
+  "analyzed_move_count": 183,
+  "important_decisive_count": 36,
+  "importance_distribution": {
+    "notice": 21,
+    "decisive": 15,
+    "ordinary": 126,
+    "important": 21
+  },
+  "all_move_classification_distribution": [
+    {
+      "category": "local_sequence",
+      "confidence": "high",
+      "count": 21,
+      "percentage": 0.11475409836065574
+    },
+    {
+      "category": "local_sequence",
+      "confidence": "medium",
+      "count": 4,
+      "percentage": 0.02185792349726776
+    },
+    {
+      "category": "uncertain",
+      "confidence": "low",
+      "count": 158,
+      "percentage": 0.8633879781420765
+    }
+  ],
+  "product_classification_distribution": [
+    {
+      "category": "local_sequence",
+      "confidence": "high",
+      "count": 1,
+      "percentage": 0.027777777777777776
+    },
+    {
+      "category": "uncertain",
+      "confidence": "low",
+      "count": 35,
+      "percentage": 0.9722222222222222
+    }
+  ],
+  "classified_coverage": 0.027777777777777776,
+  "classified_count": 1,
+  "abstained_count": 35,
+  "uncertain_reason_frequency": {
+    "missing_evidence": [
+      {
+        "reason": "actual_candidate_unreliable",
+        "count": 14,
+        "percentage_of_uncertain": 0.4
+      },
+      {
+        "reason": "actual_candidate_missing",
+        "count": 9,
+        "percentage_of_uncertain": 0.2571428571428571
+      },
+      {
+        "reason": "insufficient_independent_evidence",
+        "count": 1,
+        "percentage_of_uncertain": 0.02857142857142857
+      }
+    ],
+    "contradictions": [
+      {
+        "reason": "strong_locality_conflict",
+        "count": 11,
+        "percentage_of_uncertain": 0.3142857142857143
+      },
+      {
+        "reason": "recommended_pv_nonlocal",
+        "count": 10,
+        "percentage_of_uncertain": 0.2857142857142857
+      },
+      {
+        "reason": "actual_pv_nonlocal",
+        "count": 10,
+        "percentage_of_uncertain": 0.2857142857142857
+      }
+    ],
+    "limitations": [
+      {
+        "reason": "geometry_only_classification",
+        "count": 35,
+        "percentage_of_uncertain": 1.0
+      },
+      {
+        "reason": "context_features_are_support_only",
+        "count": 35,
+        "percentage_of_uncertain": 1.0
+      },
+      {
+        "reason": "classification_abstained",
+        "count": 35,
+        "percentage_of_uncertain": 1.0
+      }
+    ]
+  },
+  "exclusive_coverage_bottlenecks": [
+    {
+      "reason_group": "actual_candidate_unreliable",
+      "count": 14,
+      "percentage_of_uncertain": 0.4
+    },
+    {
+      "reason_group": "nonlocal_pv_or_locality_conflict",
+      "count": 11,
+      "percentage_of_uncertain": 0.3142857142857143
+    },
+    {
+      "reason_group": "actual_candidate_missing",
+      "count": 9,
+      "percentage_of_uncertain": 0.2571428571428571
+    },
+    {
+      "reason_group": "insufficient_independent_evidence",
+      "count": 1,
+      "percentage_of_uncertain": 0.02857142857142857
+    }
+  ],
+  "threshold_edge_cases": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "move_number": 70,
+      "importance": "ordinary",
+      "category": "local_sequence",
+      "confidence": "medium",
+      "edge_reasons": [
+        "actual_pv_near_ratio=0.714",
+        "recommended_pv_near_ratio=0.714"
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "move_number": 124,
+      "importance": "ordinary",
+      "category": "local_sequence",
+      "confidence": "high",
+      "edge_reasons": [
+        "actual_pv_near_ratio=0.750",
+        "recommended_pv_near_ratio=0.750"
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "move_number": 65,
+      "importance": "ordinary",
+      "category": "local_sequence",
+      "confidence": "high",
+      "edge_reasons": [
+        "actual_pv_near_ratio=0.750"
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "move_number": 73,
+      "importance": "ordinary",
+      "category": "local_sequence",
+      "confidence": "medium",
+      "edge_reasons": [
+        "actual_pv_near_ratio=0.714",
+        "recommended_pv_near_ratio=0.714"
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "move_number": 124,
+      "importance": "ordinary",
+      "category": "local_sequence",
+      "confidence": "high",
+      "edge_reasons": [
+        "chebyshev_distance=3",
+        "recommended_pv_near_ratio=0.750"
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 18,
+      "importance": "ordinary",
+      "category": "local_sequence",
+      "confidence": "high",
+      "edge_reasons": [
+        "actual_pv_near_ratio=0.750",
+        "recommended_pv_near_ratio=0.750"
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 119,
+      "importance": "decisive",
+      "category": "local_sequence",
+      "confidence": "high",
+      "edge_reasons": [
+        "actual_visit_margin=2"
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 122,
+      "importance": "ordinary",
+      "category": "local_sequence",
+      "confidence": "medium",
+      "edge_reasons": [
+        "actual_pv_near_ratio=0.750",
+        "recommended_pv_near_ratio=0.750"
+      ]
+    }
+  ],
+  "manual_review_distribution": {
+    "plausible": 10,
+    "questionable": 5
+  },
+  "manual_reviews": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "phase": "middle",
+      "move_number": 135,
+      "player": "B",
+      "actual_move": "O8",
+      "recommended_move": "N8",
+      "importance": "notice",
+      "observed_winrate_loss": 0.03338434900000009,
+      "observed_score_loss": 0.21402156999999988,
+      "search_winrate_loss": 0.08702957699999991,
+      "search_score_loss": 0.32780922999999973,
+      "winrate_loss": 0.08702957699999991,
+      "score_loss": 0.32780922999999973,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 1,
+      "actual_visits": 62,
+      "recommended_reliable": true,
+      "recommended_visits": 34,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": false,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 1,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 1.0,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 1.0,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "both_moves_near_recent_play",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "O8/N8 are adjacent and both eight-move PVs remain fully local."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "phase": "middle",
+      "move_number": 65,
+      "player": "B",
+      "actual_move": "R9",
+      "recommended_move": "Q8",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.011084668999999991,
+      "search_score_loss": 0.09636965399999997,
+      "winrate_loss": 0.011084668999999991,
+      "score_loss": 0.09636965399999997,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 1,
+      "actual_visits": 41,
+      "recommended_reliable": true,
+      "recommended_visits": 15,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 1,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 1.0,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 1.0,
+      "classification_category": "local_sequence",
+      "confidence": "medium",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "opponent_reply_near_both_moves",
+        "candidates_concentrated_in_shared_region"
+      ],
+      "contradictions": [
+        "recent_play_points_elsewhere"
+      ],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "R9/Q8 are adjacent and both PVs remain local; the recent-play contradiction is reflected by medium confidence."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "phase": "middle",
+      "move_number": 70,
+      "player": "W",
+      "actual_move": "M9",
+      "recommended_move": "M9",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 0.0,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 89,
+      "recommended_reliable": true,
+      "recommended_visits": 89,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.7142857142857143,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.7142857142857143,
+      "classification_category": "local_sequence",
+      "confidence": "medium",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "candidates_concentrated_in_shared_region"
+      ],
+      "contradictions": [
+        "opponent_reply_points_elsewhere"
+      ],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "questionable",
+      "manual_note": "The category is compatible, but both PV ratios are only 5/7 (0.714), just above the 0.70 boundary, and the opponent reply points elsewhere."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "phase": "end",
+      "move_number": 122,
+      "player": "W",
+      "actual_move": "O15",
+      "recommended_move": "O15",
+      "importance": "ordinary",
+      "observed_winrate_loss": 8.449499999996224e-05,
+      "observed_score_loss": 0.029644400000002236,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 8.449499999996224e-05,
+      "score_loss": 0.029644400000002236,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 38,
+      "recommended_reliable": true,
+      "recommended_visits": 38,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.8,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.8,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "Actual equals recommendation and both short PVs remain local; this is evidence-compatible although not a product-important move."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "phase": "end",
+      "move_number": 124,
+      "player": "W",
+      "actual_move": "O14",
+      "recommended_move": "O14",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.00019508899999998164,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 0.00019508899999998164,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 36,
+      "recommended_reliable": true,
+      "recommended_visits": 36,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.75,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.75,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "Actual equals recommendation and both PVs are 3/4 local; the spatial category is compatible."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "phase": "middle",
+      "move_number": 65,
+      "player": "B",
+      "actual_move": "K5",
+      "recommended_move": "K4",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.02848874400000001,
+      "observed_score_loss": 0.14545121300000002,
+      "search_winrate_loss": 0.017133858999999974,
+      "search_score_loss": 0.07580599600000004,
+      "winrate_loss": 0.02848874400000001,
+      "score_loss": 0.14545121300000002,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 2,
+      "actual_visits": 20,
+      "recommended_reliable": true,
+      "recommended_visits": 58,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 1,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.875,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.75,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "both_moves_near_recent_play",
+        "opponent_reply_near_both_moves",
+        "candidates_concentrated_in_shared_region"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "K5/K4 are adjacent and both PVs satisfy locality, with additional recent-play and reply support."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "phase": "middle",
+      "move_number": 73,
+      "player": "B",
+      "actual_move": "P4",
+      "recommended_move": "P4",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 0.0,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 70,
+      "recommended_reliable": true,
+      "recommended_visits": 70,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.7142857142857143,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.7142857142857143,
+      "classification_category": "local_sequence",
+      "confidence": "medium",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local"
+      ],
+      "contradictions": [
+        "recent_play_points_elsewhere",
+        "opponent_reply_points_elsewhere"
+      ],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "questionable",
+      "manual_note": "The move is identical, but both PV ratios are only 5/7 and both recent-play and reply context point elsewhere."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "phase": "end",
+      "move_number": 124,
+      "player": "W",
+      "actual_move": "O11",
+      "recommended_move": "M8",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 1.0652729999999995,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 2.8746808,
+      "winrate_loss": 0.0,
+      "score_loss": 2.8746808,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 1,
+      "actual_visits": 63,
+      "recommended_reliable": true,
+      "recommended_visits": 21,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": false,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 3,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.75,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.8571428571428571,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "both_moves_near_recent_play",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "questionable",
+      "manual_note": "O11/M8 sits exactly on the near-distance boundary and the recommendation PV is only 3/4 local."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "phase": "end",
+      "move_number": 129,
+      "player": "B",
+      "actual_move": "R9",
+      "recommended_move": "P11",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.004738249999999944,
+      "search_score_loss": 0.0,
+      "winrate_loss": 0.004738249999999944,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 1,
+      "actual_visits": 40,
+      "recommended_reliable": true,
+      "recommended_visits": 14,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 2,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 1.0,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.875,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "both_moves_near_recent_play",
+        "opponent_reply_near_both_moves",
+        "candidates_concentrated_in_shared_region"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "R9/P11 are nearby in one region and both full PVs remain local with independent context support."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "phase": "middle",
+      "move_number": 75,
+      "player": "B",
+      "actual_move": "L12",
+      "recommended_move": "L12",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 0.0,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 61,
+      "recommended_reliable": true,
+      "recommended_visits": 61,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.875,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.875,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "Actual equals recommendation and both PVs remain local, with a nearby opponent reply."
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "phase": "opening",
+      "move_number": 14,
+      "player": "W",
+      "actual_move": "D5",
+      "recommended_move": "D5",
+      "importance": "ordinary",
+      "observed_winrate_loss": 8.170200000001682e-05,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 8.170200000001682e-05,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 94,
+      "recommended_reliable": true,
+      "recommended_visits": 94,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.875,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.875,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "both_moves_near_recent_play",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "Actual equals recommendation; both PV and contextual evidence consistently stay in the same local area."
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "phase": "opening",
+      "move_number": 18,
+      "player": "W",
+      "actual_move": "B5",
+      "recommended_move": "B5",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 0.0,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 66,
+      "recommended_reliable": true,
+      "recommended_visits": 66,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.75,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.75,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "both_moves_near_recent_play",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "Both PVs are 6/8 local and recent-play plus reply evidence support the same area."
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "phase": "middle",
+      "move_number": 68,
+      "player": "W",
+      "actual_move": "P13",
+      "recommended_move": "P13",
+      "importance": "ordinary",
+      "observed_winrate_loss": 0.0,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 0.0,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 74,
+      "recommended_reliable": true,
+      "recommended_visits": 74,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 1.0,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 1.0,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "opponent_reply_near_both_moves"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "plausible",
+      "manual_note": "Actual equals recommendation and both six-move PVs are fully local."
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "phase": "end",
+      "move_number": 119,
+      "player": "B",
+      "actual_move": "K14",
+      "recommended_move": "L13",
+      "importance": "decisive",
+      "observed_winrate_loss": 0.0006154019900000002,
+      "observed_score_loss": 19.446995,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 17.7406091,
+      "winrate_loss": 0.0006154019900000002,
+      "score_loss": 19.446995,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 2,
+      "actual_visits": 7,
+      "recommended_reliable": true,
+      "recommended_visits": 68,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 1,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.8571428571428571,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 1.0,
+      "classification_category": "local_sequence",
+      "confidence": "high",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "opponent_reply_near_both_moves",
+        "candidates_concentrated_in_shared_region"
+      ],
+      "contradictions": [],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "questionable",
+      "manual_note": "K14/L13 and both PVs are local, but actual has only 7 visits against a reliability floor of 5; this is the only classified important/decisive case."
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "phase": "end",
+      "move_number": 122,
+      "player": "W",
+      "actual_move": "H16",
+      "recommended_move": "H16",
+      "importance": "ordinary",
+      "observed_winrate_loss": 3.1877580000005956e-05,
+      "observed_score_loss": 0.0,
+      "search_winrate_loss": 0.0,
+      "search_score_loss": 0.0,
+      "winrate_loss": 3.1877580000005956e-05,
+      "score_loss": 0.0,
+      "actual_candidate_found": true,
+      "actual_candidate_reliable": true,
+      "actual_order": 0,
+      "actual_visits": 60,
+      "recommended_reliable": true,
+      "recommended_visits": 60,
+      "minimum_reliable_visits": 5,
+      "actual_recommended_same_region": true,
+      "actual_recommended_locality": "near",
+      "actual_recommended_chebyshev": 0,
+      "recommended_pv_usable": true,
+      "recommended_pv_local": true,
+      "recommended_pv_near_ratio": 0.75,
+      "actual_pv_usable": true,
+      "actual_pv_local": true,
+      "actual_pv_near_ratio": 0.75,
+      "classification_category": "local_sequence",
+      "confidence": "medium",
+      "abstained": false,
+      "supporting_evidence": [
+        "moves_in_same_region",
+        "moves_spatially_near",
+        "recommended_pv_local",
+        "actual_pv_local",
+        "both_moves_near_recent_play",
+        "candidates_concentrated_in_shared_region"
+      ],
+      "contradictions": [
+        "opponent_reply_points_elsewhere"
+      ],
+      "missing_evidence": [],
+      "limitations": [
+        "geometry_only_classification",
+        "context_features_are_support_only"
+      ],
+      "manual_label": "questionable",
+      "manual_note": "Both PVs are exactly 6/8 local, while the opponent reply points elsewhere; medium confidence is appropriate but boundary-sensitive."
+    }
+  ],
+  "sources": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "source_kind": "existing_benchmark_artifact",
+      "target_move_count": 63
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "source_kind": "phase3c_sampled_analysis",
+      "move_count": 134,
+      "windows": [
+        {
+          "phase": "opening",
+          "target_start": 10,
+          "target_end": 19,
+          "context_start": 4,
+          "position_start": 3,
+          "position_end": 19
+        },
+        {
+          "phase": "middle",
+          "target_start": 63,
+          "target_end": 72,
+          "context_start": 57,
+          "position_start": 56,
+          "position_end": 72
+        },
+        {
+          "phase": "end",
+          "target_start": 119,
+          "target_end": 128,
+          "context_start": 113,
+          "position_start": 112,
+          "position_end": 128
+        }
+      ],
+      "analyzed_position_count": 51,
+      "target_move_count": 30,
+      "runtime_seconds": 90.81205149972811
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "source_kind": "phase3c_sampled_analysis",
+      "move_count": 135,
+      "windows": [
+        {
+          "phase": "opening",
+          "target_start": 10,
+          "target_end": 19,
+          "context_start": 4,
+          "position_start": 3,
+          "position_end": 19
+        },
+        {
+          "phase": "middle",
+          "target_start": 63,
+          "target_end": 72,
+          "context_start": 57,
+          "position_start": 56,
+          "position_end": 72
+        },
+        {
+          "phase": "end",
+          "target_start": 120,
+          "target_end": 129,
+          "context_start": 114,
+          "position_start": 113,
+          "position_end": 129
+        }
+      ],
+      "analyzed_position_count": 51,
+      "target_move_count": 30,
+      "runtime_seconds": 94.23488841671497
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "source_kind": "phase3c_sampled_analysis",
+      "move_count": 137,
+      "windows": [
+        {
+          "phase": "opening",
+          "target_start": 10,
+          "target_end": 19,
+          "context_start": 4,
+          "position_start": 3,
+          "position_end": 19
+        },
+        {
+          "phase": "middle",
+          "target_start": 64,
+          "target_end": 73,
+          "context_start": 58,
+          "position_start": 57,
+          "position_end": 73
+        },
+        {
+          "phase": "end",
+          "target_start": 122,
+          "target_end": 131,
+          "context_start": 116,
+          "position_start": 115,
+          "position_end": 131
+        }
+      ],
+      "analyzed_position_count": 51,
+      "target_move_count": 30,
+      "runtime_seconds": 97.56930454215035
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "source_kind": "phase3c_sampled_analysis",
+      "move_count": 151,
+      "windows": [
+        {
+          "phase": "opening",
+          "target_start": 10,
+          "target_end": 19,
+          "context_start": 4,
+          "position_start": 3,
+          "position_end": 19
+        },
+        {
+          "phase": "middle",
+          "target_start": 71,
+          "target_end": 80,
+          "context_start": 65,
+          "position_start": 64,
+          "position_end": 80
+        },
+        {
+          "phase": "end",
+          "target_start": 136,
+          "target_end": 145,
+          "context_start": 130,
+          "position_start": 129,
+          "position_end": 145
+        }
+      ],
+      "analyzed_position_count": 51,
+      "target_move_count": 30,
+      "runtime_seconds": 113.85012929188088
+    }
+  ]
+}

@@ -1,0 +1,307 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "direct_black",
+      "record": {
+        "move_number": 49,
+        "player": "B",
+        "actual_move": "D4",
+        "best_move": "Q16",
+        "best_pv": ["Q16", "D16", "C14"],
+        "pv_reliable": true,
+        "importance": "important",
+        "mover_winrate_before": 0.55,
+        "mover_winrate_after": 0.47,
+        "observed_winrate_loss": 0.08,
+        "mover_score_before": 3.0,
+        "mover_score_after": 1.5,
+        "observed_score_loss": 1.5,
+        "winrate_loss": 0.08,
+        "score_loss": 2.0,
+        "explanation_evidence": {
+          "schema_version": 1,
+          "value_perspective": "black",
+          "before": {
+            "recommended": {
+              "found": true,
+              "move": "Q16",
+              "order": 0,
+              "reliable": true,
+              "winrate_black": 0.60,
+              "score_lead_black": 4.0
+            },
+            "actual": {
+              "found": true,
+              "move": "D4",
+              "order": 2,
+              "reliable": true,
+              "winrate_black": 0.52,
+              "score_lead_black": 2.0
+            }
+          }
+        },
+        "explanation_classification": {
+          "category": "uncertain",
+          "confidence": "low"
+        }
+      },
+      "expected": {
+        "level": "direct_comparison",
+        "variation_available": true,
+        "winrate_gap": 0.08,
+        "score_gap": 2.0,
+        "auto_contains": ["第 49 手值得注意", "8.0 個百分點", "Q16"],
+        "detailed_contains": ["同一次搜尋", "8.0 個百分點", "2.0 目", "查看推薦變化圖"],
+        "detailed_not_contains": ["uncertain", "脫先", "急場", "攻擊", "防守"]
+      }
+    },
+    {
+      "id": "actual_missing",
+      "record": {
+        "move_number": 130,
+        "player": "W",
+        "actual_move": "M6",
+        "best_move": "E14",
+        "best_pv": ["E14", "F13", "D14"],
+        "pv_reliable": true,
+        "importance": "important",
+        "mover_winrate_before": 0.826,
+        "mover_winrate_after": 0.743,
+        "observed_winrate_loss": 0.083,
+        "mover_score_before": 3.0,
+        "mover_score_after": 2.4,
+        "observed_score_loss": 0.6,
+        "winrate_loss": 0.083,
+        "score_loss": 0.6,
+        "explanation_evidence": {
+          "schema_version": 1,
+          "value_perspective": "black",
+          "before": {
+            "recommended": {
+              "found": true,
+              "move": "E14",
+              "order": 0,
+              "reliable": true,
+              "winrate_black": 0.25,
+              "score_lead_black": -1.0
+            },
+            "actual": {
+              "found": false,
+              "move": "M6",
+              "order": null,
+              "reliable": false,
+              "winrate_black": null,
+              "score_lead_black": null
+            }
+          }
+        },
+        "explanation_features": {
+          "schema_version": 1,
+          "board_size": 19,
+          "actual_region": "bottom",
+          "recommended_region": "top-left",
+          "actual_recommended": {
+            "usable": true,
+            "same_region": false,
+            "locality": "far"
+          },
+          "recommended_pv": {
+            "usable": true,
+            "unusable_reason": null,
+            "anchor": "E14",
+            "anchor_region": "top-left",
+            "total_pv_moves": 3,
+            "total_board_moves": 3,
+            "pass_moves": 0,
+            "invalid_moves": 0,
+            "moves_near_anchor": 3,
+            "near_ratio": 1.0,
+            "dominant_region": "top-left",
+            "region_counts": {"top-left": 3},
+            "stays_local": true
+          },
+          "candidate_distribution": {
+            "usable": false,
+            "unusable_reason": "insufficient_reliable_candidates",
+            "usable_candidate_count": 0,
+            "distinct_regions": 0,
+            "dominant_region": null,
+            "dominant_region_ratio": null,
+            "spatially_concentrated": null
+          }
+        },
+        "explanation_classification": {
+          "category": "local_sequence",
+          "confidence": "high"
+        }
+      },
+      "expected": {
+        "level": "recommendation_only",
+        "variation_available": true,
+        "winrate_gap": null,
+        "score_gap": null,
+        "auto_contains": ["第 130 手值得注意", "8.3 個百分點", "0.6 目", "E14"],
+        "detailed_contains": ["82.6%", "74.3%", "無法可靠地直接比較實戰 M6 與推薦 E14", "實戰 M6 位於下方", "推薦後的主要變化也持續集中在左上附近", "查看推薦變化圖"],
+        "detailed_not_contains": ["local_sequence", "脫先", "急場", "攻擊", "防守"]
+      }
+    },
+    {
+      "id": "actual_unreliable",
+      "record": {
+        "move_number": 77,
+        "player": "B",
+        "actual_move": "C3",
+        "best_move": "D4",
+        "best_pv": ["D4", "C4", "D3"],
+        "pv_reliable": true,
+        "importance": "decisive",
+        "mover_winrate_before": 0.60,
+        "mover_winrate_after": 0.52,
+        "observed_winrate_loss": 0.08,
+        "mover_score_before": 2.0,
+        "mover_score_after": -1.0,
+        "observed_score_loss": 3.0,
+        "winrate_loss": 0.22,
+        "score_loss": 8.0,
+        "explanation_evidence": {
+          "schema_version": 1,
+          "value_perspective": "black",
+          "before": {
+            "recommended": {
+              "found": true,
+              "move": "D4",
+              "order": 0,
+              "reliable": true,
+              "winrate_black": 0.67,
+              "score_lead_black": 4.0
+            },
+            "actual": {
+              "found": true,
+              "move": "C3",
+              "order": 5,
+              "reliable": false,
+              "winrate_black": 0.54,
+              "score_lead_black": 0.5
+            }
+          }
+        }
+      },
+      "expected": {
+        "level": "recommendation_only",
+        "variation_available": true,
+        "winrate_gap": null,
+        "score_gap": null,
+        "auto_contains": ["第 77 手造成明顯局勢變化", "8.0 個百分點", "3.0 目", "D4"],
+        "detailed_contains": ["無法可靠地直接比較", "查看推薦變化圖"],
+        "detailed_not_contains": ["脫先", "急場", "攻擊", "防守"]
+      }
+    },
+    {
+      "id": "pv_unavailable",
+      "record": {
+        "move_number": 32,
+        "player": "B",
+        "actual_move": "C6",
+        "best_move": "D6",
+        "best_pv": ["D6", "E6"],
+        "pv_reliable": false,
+        "importance": "notice",
+        "mover_winrate_before": 0.51,
+        "mover_winrate_after": 0.49,
+        "observed_winrate_loss": 0.02,
+        "mover_score_before": -0.5,
+        "mover_score_after": -1.0,
+        "observed_score_loss": 0.5,
+        "winrate_loss": 0.05,
+        "score_loss": 1.0,
+        "explanation_evidence": {
+          "schema_version": 1,
+          "value_perspective": "black",
+          "before": {
+            "recommended": {
+              "found": true,
+              "move": "D6",
+              "order": 0,
+              "reliable": true,
+              "winrate_black": 0.55,
+              "score_lead_black": 1.0
+            },
+            "actual": {
+              "found": true,
+              "move": "C6",
+              "order": 1,
+              "reliable": true,
+              "winrate_black": 0.50,
+              "score_lead_black": 0.0
+            }
+          }
+        }
+      },
+      "expected": {
+        "level": "direct_comparison",
+        "variation_available": false,
+        "winrate_gap": 0.05,
+        "score_gap": 1.0,
+        "auto_contains": ["第 32 手出現一定的局勢變化", "D6"],
+        "detailed_contains": ["同一次搜尋", "具體棋理"],
+        "detailed_not_contains": ["查看推薦變化圖", "D6 → E6", "脫先", "急場"]
+      }
+    },
+    {
+      "id": "direct_white",
+      "record": {
+        "move_number": 88,
+        "player": "W",
+        "actual_move": "Q10",
+        "best_move": "C6",
+        "best_pv": ["C6", "D6", "C7"],
+        "pv_reliable": true,
+        "importance": "important",
+        "mover_winrate_before": 0.65,
+        "mover_winrate_after": 0.55,
+        "observed_winrate_loss": 0.10,
+        "mover_score_before": -2.0,
+        "mover_score_after": -3.5,
+        "observed_score_loss": 1.5,
+        "winrate_loss": 0.10,
+        "score_loss": 3.0,
+        "explanation_evidence": {
+          "schema_version": 1,
+          "value_perspective": "black",
+          "before": {
+            "recommended": {
+              "found": true,
+              "move": "C6",
+              "order": 0,
+              "reliable": true,
+              "winrate_black": 0.30,
+              "score_lead_black": -5.0
+            },
+            "actual": {
+              "found": true,
+              "move": "Q10",
+              "order": 2,
+              "reliable": true,
+              "winrate_black": 0.38,
+              "score_lead_black": -2.0
+            }
+          }
+        },
+        "explanation_classification": {
+          "category": "global_direction",
+          "confidence": "high"
+        }
+      },
+      "expected": {
+        "level": "direct_comparison",
+        "variation_available": true,
+        "winrate_gap": 0.08,
+        "score_gap": 3.0,
+        "auto_contains": ["白棋實戰 Q10", "10.0 個百分點", "C6"],
+        "detailed_contains": ["勝率由約 65.0% 變為 55.0%", "落後約 2.0 目", "落後約 3.5 目", "3.0 目"],
+        "detailed_not_contains": ["global_direction", "脫先", "急場", "攻擊", "防守"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1347 @@
+{
+  "schema_version": 1,
+  "case_counts": {
+    "negative": 3,
+    "suspected_positive": 3,
+    "ambiguous": 3
+  },
+  "calibration_100": {
+    "case_count": 9,
+    "query_count": 19,
+    "case_runtime_seconds": 54.21790562430397,
+    "wall_clock_seconds": 54.30633379193023
+  },
+  "stability_200": {
+    "method": "one 200-visit rerun after the 100-visit screen",
+    "case_count": 6,
+    "query_count": 12,
+    "case_runtime_seconds": 62.656311289872974,
+    "wall_clock_seconds": 62.718240374699235,
+    "selected_case_ids": [
+      "kim-park-130",
+      "park-an-160",
+      "park-an-173",
+      "park-an-146",
+      "park-an-166",
+      "park-an-176"
+    ]
+  },
+  "quality_distribution": {
+    "case_count": 9,
+    "actual_found_count": 7,
+    "actual_reliable_count": 6,
+    "actual_orders": [
+      3.0,
+      4.0,
+      1.0,
+      2.0,
+      2.0,
+      2.0,
+      2.0
+    ],
+    "actual_visits": [
+      12.0,
+      4.0,
+      13.0,
+      21.0,
+      14.0,
+      11.0,
+      25.0
+    ],
+    "actual_visit_shares": [
+      0.10810810810810811,
+      0.038834951456310676,
+      0.12745098039215685,
+      0.20388349514563106,
+      0.13592233009708737,
+      0.10679611650485436,
+      0.24271844660194175
+    ],
+    "initial_winrate_gaps": [
+      0.06888046000000003,
+      0.16035756899999998,
+      0.10565046999999994,
+      0.316755417,
+      0.23536717900000004,
+      0.10375505499999993,
+      0.025204616999999985
+    ],
+    "initial_score_gaps": [
+      0.45188827,
+      6.48817064,
+      2.04214651,
+      3.8017293600000004,
+      2.84588901,
+      1.8648109899999996,
+      -0.09114369
+    ]
+  },
+  "feature_counts_by_label": {
+    "ambiguous": {
+      "case_count": 3,
+      "actual_reply_near_recommendation_count": 0,
+      "positive_first_winrate_gap_count": 3,
+      "positive_post_winrate_gap_count": 3,
+      "positive_gap_change_winrate_count": 1
+    },
+    "negative": {
+      "case_count": 3,
+      "actual_reply_near_recommendation_count": 0,
+      "positive_first_winrate_gap_count": 3,
+      "positive_post_winrate_gap_count": 2,
+      "positive_gap_change_winrate_count": 2
+    },
+    "suspected_positive": {
+      "case_count": 3,
+      "actual_reply_near_recommendation_count": 3,
+      "positive_first_winrate_gap_count": 3,
+      "positive_post_winrate_gap_count": 3,
+      "positive_gap_change_winrate_count": 1
+    }
+  },
+  "stability_summary": {
+    "case_count": 6,
+    "recommended_reply_exact_stable_count": 4,
+    "recommended_reply_region_stable_count": 5,
+    "actual_reply_exact_stable_count": 4,
+    "actual_reply_region_stable_count": 4
+  },
+  "stability_by_case": {
+    "kim-park-130": {
+      "run_count": 2,
+      "usable_run_count": 2,
+      "missing_or_failed_run_count": 0,
+      "recommended_reply": {
+        "moves": [
+          "D1",
+          "D1"
+        ],
+        "regions": [
+          "bottom-left",
+          "bottom-left"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "actual_reply": {
+        "moves": [
+          "D1",
+          "D1"
+        ],
+        "regions": [
+          "bottom-left",
+          "bottom-left"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "metrics": {
+        "first_move_winrate_gap": {
+          "count": 2,
+          "mean": 0.03840308650000007,
+          "median": 0.03840308650000007,
+          "minimum": 0.0029374590000000866,
+          "maximum": 0.07386871400000006,
+          "range": 0.07093125499999997
+        },
+        "first_move_score_gap": {
+          "count": 2,
+          "mean": 0.2229041055,
+          "median": 0.2229041055,
+          "minimum": -0.0016050009999999393,
+          "maximum": 0.44741321199999995,
+          "range": 0.4490182129999999
+        },
+        "post_reply_winrate_gap": {
+          "count": 2,
+          "mean": 0.03862593400000003,
+          "median": 0.03862593400000003,
+          "minimum": -0.003986273999999956,
+          "maximum": 0.08123814200000001,
+          "range": 0.08522441599999997
+        },
+        "post_reply_score_gap": {
+          "count": 2,
+          "mean": 0.2739024375,
+          "median": 0.2739024375,
+          "minimum": 0.024903687000000008,
+          "maximum": 0.522901188,
+          "range": 0.49799750099999995
+        },
+        "gap_change_winrate": {
+          "count": 2,
+          "mean": 0.00022284749999995634,
+          "median": 0.00022284749999995634,
+          "minimum": -0.006923733000000043,
+          "maximum": 0.007369427999999956,
+          "range": 0.014293160999999999
+        },
+        "gap_change_score": {
+          "count": 2,
+          "mean": 0.05099833199999998,
+          "median": 0.05099833199999998,
+          "minimum": 0.026508687999999947,
+          "maximum": 0.07548797600000001,
+          "range": 0.048979288000000065
+        }
+      }
+    },
+    "park-an-160": {
+      "run_count": 2,
+      "usable_run_count": 2,
+      "missing_or_failed_run_count": 0,
+      "recommended_reply": {
+        "moves": [
+          "C6",
+          "B6"
+        ],
+        "regions": [
+          "bottom-left",
+          "bottom-left"
+        ],
+        "exact_move_stable": false,
+        "region_stable": true
+      },
+      "actual_reply": {
+        "moves": [
+          "E9",
+          "E9"
+        ],
+        "regions": [
+          "left",
+          "left"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "metrics": {
+        "first_move_winrate_gap": {
+          "count": 2,
+          "mean": 0.6042957875,
+          "median": 0.6042957875,
+          "minimum": 0.594509917,
+          "maximum": 0.614081658,
+          "range": 0.01957174100000003
+        },
+        "first_move_score_gap": {
+          "count": 2,
+          "mean": 7.661370795,
+          "median": 7.661370795,
+          "minimum": 7.60355723,
+          "maximum": 7.71918436,
+          "range": 0.11562713000000002
+        },
+        "post_reply_winrate_gap": {
+          "count": 2,
+          "mean": 0.5401621875,
+          "median": 0.5401621875,
+          "minimum": 0.518185087,
+          "maximum": 0.562139288,
+          "range": 0.043954201000000026
+        },
+        "post_reply_score_gap": {
+          "count": 2,
+          "mean": 7.425126595,
+          "median": 7.425126595,
+          "minimum": 7.0163095900000005,
+          "maximum": 7.8339436000000005,
+          "range": 0.8176340099999999
+        },
+        "gap_change_winrate": {
+          "count": 2,
+          "mean": -0.06413360000000001,
+          "median": -0.06413360000000001,
+          "minimum": -0.09589657100000004,
+          "maximum": -0.032370628999999984,
+          "range": 0.06352594200000006
+        },
+        "gap_change_score": {
+          "count": 2,
+          "mean": -0.23624419999999935,
+          "median": -0.23624419999999935,
+          "minimum": -0.5872476399999993,
+          "maximum": 0.1147592400000006,
+          "range": 0.7020068799999999
+        }
+      }
+    },
+    "park-an-173": {
+      "run_count": 2,
+      "usable_run_count": 2,
+      "missing_or_failed_run_count": 0,
+      "recommended_reply": {
+        "moves": [
+          "B12",
+          "B12"
+        ],
+        "regions": [
+          "left",
+          "left"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "actual_reply": {
+        "moves": [
+          "B7",
+          "B14"
+        ],
+        "regions": [
+          "left",
+          "top-left"
+        ],
+        "exact_move_stable": false,
+        "region_stable": false
+      },
+      "metrics": {
+        "first_move_winrate_gap": {
+          "count": 2,
+          "mean": 0.20907468750000002,
+          "median": 0.20907468750000002,
+          "minimum": 0.14377403700000002,
+          "maximum": 0.274375338,
+          "range": 0.130601301
+        },
+        "first_move_score_gap": {
+          "count": 2,
+          "mean": 7.014197749999999,
+          "median": 7.014197749999999,
+          "minimum": 5.47555005,
+          "maximum": 8.55284545,
+          "range": 3.0772953999999997
+        },
+        "post_reply_winrate_gap": {
+          "count": 2,
+          "mean": 0.24569901649999998,
+          "median": 0.24569901649999998,
+          "minimum": 0.1823065639999999,
+          "maximum": 0.30909146900000006,
+          "range": 0.12678490500000017
+        },
+        "post_reply_score_gap": {
+          "count": 2,
+          "mean": 4.46651368,
+          "median": 4.46651368,
+          "minimum": 4.02423261,
+          "maximum": 4.90879475,
+          "range": 0.8845621399999999
+        },
+        "gap_change_winrate": {
+          "count": 2,
+          "mean": 0.036624328999999956,
+          "median": 0.036624328999999956,
+          "minimum": 0.03471613100000004,
+          "maximum": 0.03853252699999987,
+          "range": 0.003816395999999833
+        },
+        "gap_change_score": {
+          "count": 2,
+          "mean": -2.5476840699999994,
+          "median": -2.5476840699999994,
+          "minimum": -3.6440506999999993,
+          "maximum": -1.4513174399999995,
+          "range": 2.19273326
+        }
+      }
+    },
+    "park-an-146": {
+      "run_count": 2,
+      "usable_run_count": 2,
+      "missing_or_failed_run_count": 0,
+      "recommended_reply": {
+        "moves": [
+          "B9",
+          "B6"
+        ],
+        "regions": [
+          "left",
+          "bottom-left"
+        ],
+        "exact_move_stable": false,
+        "region_stable": false
+      },
+      "actual_reply": {
+        "moves": [
+          "O7",
+          "O7"
+        ],
+        "regions": [
+          "right",
+          "right"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "metrics": {
+        "first_move_winrate_gap": {
+          "count": 2,
+          "mean": 0.13159776750000002,
+          "median": 0.13159776750000002,
+          "minimum": 0.12449725,
+          "maximum": 0.13869828500000003,
+          "range": 0.014201035000000028
+        },
+        "first_move_score_gap": {
+          "count": 2,
+          "mean": 1.8824990300000004,
+          "median": 1.8824990300000004,
+          "minimum": 1.7174907600000004,
+          "maximum": 2.0475073000000004,
+          "range": 0.3300165399999999
+        },
+        "post_reply_winrate_gap": {
+          "count": 2,
+          "mean": 0.11629195250000002,
+          "median": 0.11629195250000002,
+          "minimum": 0.08224725399999999,
+          "maximum": 0.15033665100000004,
+          "range": 0.06808939700000005
+        },
+        "post_reply_score_gap": {
+          "count": 2,
+          "mean": 2.0238249100000005,
+          "median": 2.0238249100000005,
+          "minimum": 1.9888390600000005,
+          "maximum": 2.0588107600000005,
+          "range": 0.06997169999999997
+        },
+        "gap_change_winrate": {
+          "count": 2,
+          "mean": -0.015305815,
+          "median": -0.015305815,
+          "minimum": -0.04224999600000001,
+          "maximum": 0.011638366000000011,
+          "range": 0.05388836200000002
+        },
+        "gap_change_score": {
+          "count": 2,
+          "mean": 0.14132588000000013,
+          "median": 0.14132588000000013,
+          "minimum": 0.011303460000000154,
+          "maximum": 0.2713483000000001,
+          "range": 0.26004483999999994
+        }
+      }
+    },
+    "park-an-166": {
+      "run_count": 2,
+      "usable_run_count": 2,
+      "missing_or_failed_run_count": 0,
+      "recommended_reply": {
+        "moves": [
+          "C6",
+          "C6"
+        ],
+        "regions": [
+          "bottom-left",
+          "bottom-left"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "actual_reply": {
+        "moves": [
+          "Q17",
+          "Q17"
+        ],
+        "regions": [
+          "top-right",
+          "top-right"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "metrics": {
+        "first_move_winrate_gap": {
+          "count": 2,
+          "mean": 0.13346402049999995,
+          "median": 0.13346402049999995,
+          "minimum": 0.09010613299999992,
+          "maximum": 0.17682190799999997,
+          "range": 0.08671577500000005
+        },
+        "first_move_score_gap": {
+          "count": 2,
+          "mean": 2.165290275,
+          "median": 2.165290275,
+          "minimum": 1.7019589599999998,
+          "maximum": 2.62862159,
+          "range": 0.92666263
+        },
+        "post_reply_winrate_gap": {
+          "count": 2,
+          "mean": 0.08378664699999999,
+          "median": 0.08378664699999999,
+          "minimum": 0.07763607900000002,
+          "maximum": 0.08993721499999996,
+          "range": 0.012301135999999935
+        },
+        "post_reply_score_gap": {
+          "count": 2,
+          "mean": 2.0413153800000003,
+          "median": 2.0413153800000003,
+          "minimum": 1.8239589299999999,
+          "maximum": 2.2586718300000004,
+          "range": 0.4347129000000005
+        },
+        "gap_change_winrate": {
+          "count": 2,
+          "mean": -0.049677373499999955,
+          "median": -0.049677373499999955,
+          "minimum": -0.08688469300000001,
+          "maximum": -0.012470053999999897,
+          "range": 0.07441463900000012
+        },
+        "gap_change_score": {
+          "count": 2,
+          "mean": -0.1239748949999997,
+          "median": -0.1239748949999997,
+          "minimum": -0.80466266,
+          "maximum": 0.5567128700000006,
+          "range": 1.3613755300000006
+        }
+      }
+    },
+    "park-an-176": {
+      "run_count": 2,
+      "usable_run_count": 2,
+      "missing_or_failed_run_count": 0,
+      "recommended_reply": {
+        "moves": [
+          "E9",
+          "E9"
+        ],
+        "regions": [
+          "left",
+          "left"
+        ],
+        "exact_move_stable": true,
+        "region_stable": true
+      },
+      "actual_reply": {
+        "moves": [
+          "B9",
+          "D6"
+        ],
+        "regions": [
+          "left",
+          "bottom-left"
+        ],
+        "exact_move_stable": false,
+        "region_stable": false
+      },
+      "metrics": {
+        "first_move_winrate_gap": {
+          "count": 2,
+          "mean": 0.01330168850000002,
+          "median": 0.01330168850000002,
+          "minimum": 0.010665393000000023,
+          "maximum": 0.015937984000000016,
+          "range": 0.005272590999999993
+        },
+        "first_move_score_gap": {
+          "count": 2,
+          "mean": -1.769650145,
+          "median": -1.769650145,
+          "minimum": -1.8925390899999996,
+          "maximum": -1.6467612000000003,
+          "range": 0.2457778899999994
+        },
+        "post_reply_winrate_gap": {
+          "count": 2,
+          "mean": 0.012753542499999937,
+          "median": 0.012753542499999937,
+          "minimum": 0.011139029999999939,
+          "maximum": 0.014368054999999935,
+          "range": 0.0032290249999999965
+        },
+        "post_reply_score_gap": {
+          "count": 2,
+          "mean": -2.5756488749999997,
+          "median": -2.5756488749999997,
+          "minimum": -2.6337716700000002,
+          "maximum": -2.5175260799999997,
+          "range": 0.11624559000000056
+        },
+        "gap_change_winrate": {
+          "count": 2,
+          "mean": -0.0005481460000000826,
+          "median": -0.0005481460000000826,
+          "minimum": -0.001569929000000081,
+          "maximum": 0.0004736369999999157,
+          "range": 0.0020435659999999967
+        },
+        "gap_change_score": {
+          "count": 2,
+          "mean": -0.80599873,
+          "median": -0.80599873,
+          "minimum": -0.8707648799999994,
+          "maximum": -0.7412325800000006,
+          "range": 0.12953229999999882
+        }
+      }
+    }
+  },
+  "production_cost_estimate": {
+    "warm_100_visit_branch_seconds_mean": 2.7176478680274965,
+    "warm_100_visit_branch_seconds_median": 2.6203039784450084,
+    "warm_100_visit_branch_seconds_min": 2.3335791248828173,
+    "warm_100_visit_branch_seconds_max": 3.3772904169745743,
+    "estimated_seconds_per_triggered_move": 5.435295736054993,
+    "estimated_extra_seconds": {
+      "3": 16.30588720816498,
+      "5": 27.176478680274965,
+      "8": 43.48236588843994
+    },
+    "query_count_per_triggered_move": 2
+  },
+  "table": [
+    {
+      "case_id": "kim-park-130",
+      "sgf": "棋譜/[金升宰]vs[朴廷桓]1764341261010001550.sgf",
+      "move_number": 130,
+      "expected_case_type": "negative",
+      "player": "W",
+      "actual": "M6",
+      "recommendation": "E14",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": 3,
+      "actual_visits": 12,
+      "recommended_visits": 16,
+      "actual_visit_share": 0.10810810810810811,
+      "initial_winrate_gap": 0.06888046000000003,
+      "initial_score_gap": 0.45188827,
+      "recommended_branch_reply": "D1",
+      "actual_branch_reply": "D1",
+      "actual_reply_near_recommendation": false,
+      "first_move_gap_winrate": 0.0029374590000000866,
+      "first_move_gap_score": -0.0016050009999999393,
+      "post_reply_gap_winrate": -0.003986273999999956,
+      "post_reply_gap_score": 0.024903687000000008,
+      "gap_change_winrate": -0.006923733000000043,
+      "gap_change_score": 0.026508687999999947,
+      "query_count": 3,
+      "total_runtime_seconds": 10.264469374436885,
+      "reliable": true,
+      "stability": {
+        "run_count": 2,
+        "usable_run_count": 2,
+        "missing_or_failed_run_count": 0,
+        "recommended_reply": {
+          "moves": [
+            "D1",
+            "D1"
+          ],
+          "regions": [
+            "bottom-left",
+            "bottom-left"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "actual_reply": {
+          "moves": [
+            "D1",
+            "D1"
+          ],
+          "regions": [
+            "bottom-left",
+            "bottom-left"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "metrics": {
+          "first_move_winrate_gap": {
+            "count": 2,
+            "mean": 0.03840308650000007,
+            "median": 0.03840308650000007,
+            "minimum": 0.0029374590000000866,
+            "maximum": 0.07386871400000006,
+            "range": 0.07093125499999997
+          },
+          "first_move_score_gap": {
+            "count": 2,
+            "mean": 0.2229041055,
+            "median": 0.2229041055,
+            "minimum": -0.0016050009999999393,
+            "maximum": 0.44741321199999995,
+            "range": 0.4490182129999999
+          },
+          "post_reply_winrate_gap": {
+            "count": 2,
+            "mean": 0.03862593400000003,
+            "median": 0.03862593400000003,
+            "minimum": -0.003986273999999956,
+            "maximum": 0.08123814200000001,
+            "range": 0.08522441599999997
+          },
+          "post_reply_score_gap": {
+            "count": 2,
+            "mean": 0.2739024375,
+            "median": 0.2739024375,
+            "minimum": 0.024903687000000008,
+            "maximum": 0.522901188,
+            "range": 0.49799750099999995
+          },
+          "gap_change_winrate": {
+            "count": 2,
+            "mean": 0.00022284749999995634,
+            "median": 0.00022284749999995634,
+            "minimum": -0.006923733000000043,
+            "maximum": 0.007369427999999956,
+            "range": 0.014293160999999999
+          },
+          "gap_change_score": {
+            "count": 2,
+            "mean": 0.05099833199999998,
+            "median": 0.05099833199999998,
+            "minimum": 0.026508687999999947,
+            "maximum": 0.07548797600000001,
+            "range": 0.048979288000000065
+          }
+        }
+      },
+      "notes": "Known immediate-return counterexample: prior prototype reply was P14, far from E14."
+    },
+    {
+      "case_id": "park-an-160",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 160,
+      "expected_case_type": "suspected_positive",
+      "player": "W",
+      "actual": "L6",
+      "recommendation": "B7",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": null,
+      "actual_visits": null,
+      "recommended_visits": 69,
+      "actual_visit_share": null,
+      "initial_winrate_gap": null,
+      "initial_score_gap": null,
+      "recommended_branch_reply": "C6",
+      "actual_branch_reply": "E9",
+      "actual_reply_near_recommendation": true,
+      "first_move_gap_winrate": 0.614081658,
+      "first_move_gap_score": 7.60355723,
+      "post_reply_gap_winrate": 0.518185087,
+      "post_reply_gap_score": 7.0163095900000005,
+      "gap_change_winrate": -0.09589657100000004,
+      "gap_change_score": -0.5872476399999993,
+      "query_count": 2,
+      "total_runtime_seconds": 5.983899125829339,
+      "reliable": true,
+      "stability": {
+        "run_count": 2,
+        "usable_run_count": 2,
+        "missing_or_failed_run_count": 0,
+        "recommended_reply": {
+          "moves": [
+            "C6",
+            "B6"
+          ],
+          "regions": [
+            "bottom-left",
+            "bottom-left"
+          ],
+          "exact_move_stable": false,
+          "region_stable": true
+        },
+        "actual_reply": {
+          "moves": [
+            "E9",
+            "E9"
+          ],
+          "regions": [
+            "left",
+            "left"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "metrics": {
+          "first_move_winrate_gap": {
+            "count": 2,
+            "mean": 0.6042957875,
+            "median": 0.6042957875,
+            "minimum": 0.594509917,
+            "maximum": 0.614081658,
+            "range": 0.01957174100000003
+          },
+          "first_move_score_gap": {
+            "count": 2,
+            "mean": 7.661370795,
+            "median": 7.661370795,
+            "minimum": 7.60355723,
+            "maximum": 7.71918436,
+            "range": 0.11562713000000002
+          },
+          "post_reply_winrate_gap": {
+            "count": 2,
+            "mean": 0.5401621875,
+            "median": 0.5401621875,
+            "minimum": 0.518185087,
+            "maximum": 0.562139288,
+            "range": 0.043954201000000026
+          },
+          "post_reply_score_gap": {
+            "count": 2,
+            "mean": 7.425126595,
+            "median": 7.425126595,
+            "minimum": 7.0163095900000005,
+            "maximum": 7.8339436000000005,
+            "range": 0.8176340099999999
+          },
+          "gap_change_winrate": {
+            "count": 2,
+            "mean": -0.06413360000000001,
+            "median": -0.06413360000000001,
+            "minimum": -0.09589657100000004,
+            "maximum": -0.032370628999999984,
+            "range": 0.06352594200000006
+          },
+          "gap_change_score": {
+            "count": 2,
+            "mean": -0.23624419999999935,
+            "median": -0.23624419999999935,
+            "minimum": -0.5872476399999993,
+            "maximum": 0.1147592400000006,
+            "range": 0.7020068799999999
+          }
+        }
+      },
+      "notes": "Large observed loss and cached opponent reply returned near the recommendation area."
+    },
+    {
+      "case_id": "park-an-168",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 168,
+      "expected_case_type": "suspected_positive",
+      "player": "W",
+      "actual": "R19",
+      "recommendation": "B7",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": null,
+      "actual_visits": null,
+      "recommended_visits": 44,
+      "actual_visit_share": null,
+      "initial_winrate_gap": null,
+      "initial_score_gap": null,
+      "recommended_branch_reply": "B9",
+      "actual_branch_reply": "E9",
+      "actual_reply_near_recommendation": true,
+      "first_move_gap_winrate": 0.12640968499999994,
+      "first_move_gap_score": 4.860450000000001,
+      "post_reply_gap_winrate": 0.117771811,
+      "post_reply_gap_score": 6.06433801,
+      "gap_change_winrate": -0.008637873999999934,
+      "gap_change_score": 1.2038880099999991,
+      "query_count": 2,
+      "total_runtime_seconds": 5.55723562464118,
+      "reliable": true,
+      "stability": null,
+      "notes": "Cached opponent reply returned near recommendation while actual and recommendation were far apart."
+    },
+    {
+      "case_id": "park-an-173",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 173,
+      "expected_case_type": "suspected_positive",
+      "player": "B",
+      "actual": "T17",
+      "recommendation": "E9",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": 4,
+      "actual_visits": 4,
+      "recommended_visits": 37,
+      "actual_visit_share": 0.038834951456310676,
+      "initial_winrate_gap": 0.16035756899999998,
+      "initial_score_gap": 6.48817064,
+      "recommended_branch_reply": "B12",
+      "actual_branch_reply": "B7",
+      "actual_reply_near_recommendation": true,
+      "first_move_gap_winrate": 0.274375338,
+      "first_move_gap_score": 8.55284545,
+      "post_reply_gap_winrate": 0.30909146900000006,
+      "post_reply_gap_score": 4.90879475,
+      "gap_change_winrate": 0.03471613100000004,
+      "gap_change_score": -3.6440506999999993,
+      "query_count": 2,
+      "total_runtime_seconds": 5.484767457470298,
+      "reliable": true,
+      "stability": {
+        "run_count": 2,
+        "usable_run_count": 2,
+        "missing_or_failed_run_count": 0,
+        "recommended_reply": {
+          "moves": [
+            "B12",
+            "B12"
+          ],
+          "regions": [
+            "left",
+            "left"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "actual_reply": {
+          "moves": [
+            "B7",
+            "B14"
+          ],
+          "regions": [
+            "left",
+            "top-left"
+          ],
+          "exact_move_stable": false,
+          "region_stable": false
+        },
+        "metrics": {
+          "first_move_winrate_gap": {
+            "count": 2,
+            "mean": 0.20907468750000002,
+            "median": 0.20907468750000002,
+            "minimum": 0.14377403700000002,
+            "maximum": 0.274375338,
+            "range": 0.130601301
+          },
+          "first_move_score_gap": {
+            "count": 2,
+            "mean": 7.014197749999999,
+            "median": 7.014197749999999,
+            "minimum": 5.47555005,
+            "maximum": 8.55284545,
+            "range": 3.0772953999999997
+          },
+          "post_reply_winrate_gap": {
+            "count": 2,
+            "mean": 0.24569901649999998,
+            "median": 0.24569901649999998,
+            "minimum": 0.1823065639999999,
+            "maximum": 0.30909146900000006,
+            "range": 0.12678490500000017
+          },
+          "post_reply_score_gap": {
+            "count": 2,
+            "mean": 4.46651368,
+            "median": 4.46651368,
+            "minimum": 4.02423261,
+            "maximum": 4.90879475,
+            "range": 0.8845621399999999
+          },
+          "gap_change_winrate": {
+            "count": 2,
+            "mean": 0.036624328999999956,
+            "median": 0.036624328999999956,
+            "minimum": 0.03471613100000004,
+            "maximum": 0.03853252699999987,
+            "range": 0.003816395999999833
+          },
+          "gap_change_score": {
+            "count": 2,
+            "mean": -2.5476840699999994,
+            "median": -2.5476840699999994,
+            "minimum": -3.6440506999999993,
+            "maximum": -1.4513174399999995,
+            "range": 2.19273326
+          }
+        }
+      },
+      "notes": "Important observed loss and cached reply near the recommendation area."
+    },
+    {
+      "case_id": "park-an-146",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 146,
+      "expected_case_type": "negative",
+      "player": "W",
+      "actual": "R7",
+      "recommendation": "B7",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": 1,
+      "actual_visits": 13,
+      "recommended_visits": 33,
+      "actual_visit_share": 0.12745098039215685,
+      "initial_winrate_gap": 0.10565046999999994,
+      "initial_score_gap": 2.04214651,
+      "recommended_branch_reply": "B9",
+      "actual_branch_reply": "O7",
+      "actual_reply_near_recommendation": false,
+      "first_move_gap_winrate": 0.13869828500000003,
+      "first_move_gap_score": 2.0475073000000004,
+      "post_reply_gap_winrate": 0.15033665100000004,
+      "post_reply_gap_score": 2.0588107600000005,
+      "gap_change_winrate": 0.011638366000000011,
+      "gap_change_score": 0.011303460000000154,
+      "query_count": 2,
+      "total_runtime_seconds": 5.471830874681473,
+      "reliable": true,
+      "stability": {
+        "run_count": 2,
+        "usable_run_count": 2,
+        "missing_or_failed_run_count": 0,
+        "recommended_reply": {
+          "moves": [
+            "B9",
+            "B6"
+          ],
+          "regions": [
+            "left",
+            "bottom-left"
+          ],
+          "exact_move_stable": false,
+          "region_stable": false
+        },
+        "actual_reply": {
+          "moves": [
+            "O7",
+            "O7"
+          ],
+          "regions": [
+            "right",
+            "right"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "metrics": {
+          "first_move_winrate_gap": {
+            "count": 2,
+            "mean": 0.13159776750000002,
+            "median": 0.13159776750000002,
+            "minimum": 0.12449725,
+            "maximum": 0.13869828500000003,
+            "range": 0.014201035000000028
+          },
+          "first_move_score_gap": {
+            "count": 2,
+            "mean": 1.8824990300000004,
+            "median": 1.8824990300000004,
+            "minimum": 1.7174907600000004,
+            "maximum": 2.0475073000000004,
+            "range": 0.3300165399999999
+          },
+          "post_reply_winrate_gap": {
+            "count": 2,
+            "mean": 0.11629195250000002,
+            "median": 0.11629195250000002,
+            "minimum": 0.08224725399999999,
+            "maximum": 0.15033665100000004,
+            "range": 0.06808939700000005
+          },
+          "post_reply_score_gap": {
+            "count": 2,
+            "mean": 2.0238249100000005,
+            "median": 2.0238249100000005,
+            "minimum": 1.9888390600000005,
+            "maximum": 2.0588107600000005,
+            "range": 0.06997169999999997
+          },
+          "gap_change_winrate": {
+            "count": 2,
+            "mean": -0.015305815,
+            "median": -0.015305815,
+            "minimum": -0.04224999600000001,
+            "maximum": 0.011638366000000011,
+            "range": 0.05388836200000002
+          },
+          "gap_change_score": {
+            "count": 2,
+            "mean": 0.14132588000000013,
+            "median": 0.14132588000000013,
+            "minimum": 0.011303460000000154,
+            "maximum": 0.2713483000000001,
+            "range": 0.26004483999999994
+          }
+        }
+      },
+      "notes": "Actual was reliable and cached opponent reply stayed near the actual local fight."
+    },
+    {
+      "case_id": "park-an-152",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 152,
+      "expected_case_type": "negative",
+      "player": "W",
+      "actual": "P9",
+      "recommendation": "B7",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": 2,
+      "actual_visits": 21,
+      "recommended_visits": 10,
+      "actual_visit_share": 0.20388349514563106,
+      "initial_winrate_gap": 0.316755417,
+      "initial_score_gap": 3.8017293600000004,
+      "recommended_branch_reply": "M8",
+      "actual_branch_reply": "M8",
+      "actual_reply_near_recommendation": false,
+      "first_move_gap_winrate": 0.16019644900000007,
+      "first_move_gap_score": 2.0076463171,
+      "post_reply_gap_winrate": 0.16868590299999997,
+      "post_reply_gap_score": 2.21808548,
+      "gap_change_winrate": 0.008489453999999896,
+      "gap_change_score": 0.2104391629000002,
+      "query_count": 2,
+      "total_runtime_seconds": 5.6859427080489695,
+      "reliable": true,
+      "stability": null,
+      "notes": "Actual was reliable and recent/reply context remained near the actual area."
+    },
+    {
+      "case_id": "park-an-130",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 130,
+      "expected_case_type": "ambiguous",
+      "player": "W",
+      "actual": "M11",
+      "recommendation": "B7",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": 2,
+      "actual_visits": 14,
+      "recommended_visits": 34,
+      "actual_visit_share": 0.13592233009708737,
+      "initial_winrate_gap": 0.23536717900000004,
+      "initial_score_gap": 2.84588901,
+      "recommended_branch_reply": "B9",
+      "actual_branch_reply": "L10",
+      "actual_reply_near_recommendation": false,
+      "first_move_gap_winrate": 0.163117803,
+      "first_move_gap_score": 1.9118450989999998,
+      "post_reply_gap_winrate": 0.16684881000000007,
+      "post_reply_gap_score": 1.7345319730000002,
+      "gap_change_winrate": 0.003731007000000064,
+      "gap_change_score": -0.1773131259999996,
+      "query_count": 2,
+      "total_runtime_seconds": 5.497403875458986,
+      "reliable": true,
+      "stability": null,
+      "notes": "Large objective loss, but both cached PVs were spatially dispersed."
+    },
+    {
+      "case_id": "park-an-166",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 166,
+      "expected_case_type": "ambiguous",
+      "player": "W",
+      "actual": "Q18",
+      "recommendation": "B7",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": 2,
+      "actual_visits": 11,
+      "recommended_visits": 46,
+      "actual_visit_share": 0.10679611650485436,
+      "initial_winrate_gap": 0.10375505499999993,
+      "initial_score_gap": 1.8648109899999996,
+      "recommended_branch_reply": "C6",
+      "actual_branch_reply": "Q17",
+      "actual_reply_near_recommendation": false,
+      "first_move_gap_winrate": 0.17682190799999997,
+      "first_move_gap_score": 2.62862159,
+      "post_reply_gap_winrate": 0.08993721499999996,
+      "post_reply_gap_score": 1.8239589299999999,
+      "gap_change_winrate": -0.08688469300000001,
+      "gap_change_score": -0.80466266,
+      "query_count": 2,
+      "total_runtime_seconds": 5.0319415419362485,
+      "reliable": true,
+      "stability": {
+        "run_count": 2,
+        "usable_run_count": 2,
+        "missing_or_failed_run_count": 0,
+        "recommended_reply": {
+          "moves": [
+            "C6",
+            "C6"
+          ],
+          "regions": [
+            "bottom-left",
+            "bottom-left"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "actual_reply": {
+          "moves": [
+            "Q17",
+            "Q17"
+          ],
+          "regions": [
+            "top-right",
+            "top-right"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "metrics": {
+          "first_move_winrate_gap": {
+            "count": 2,
+            "mean": 0.13346402049999995,
+            "median": 0.13346402049999995,
+            "minimum": 0.09010613299999992,
+            "maximum": 0.17682190799999997,
+            "range": 0.08671577500000005
+          },
+          "first_move_score_gap": {
+            "count": 2,
+            "mean": 2.165290275,
+            "median": 2.165290275,
+            "minimum": 1.7019589599999998,
+            "maximum": 2.62862159,
+            "range": 0.92666263
+          },
+          "post_reply_winrate_gap": {
+            "count": 2,
+            "mean": 0.08378664699999999,
+            "median": 0.08378664699999999,
+            "minimum": 0.07763607900000002,
+            "maximum": 0.08993721499999996,
+            "range": 0.012301135999999935
+          },
+          "post_reply_score_gap": {
+            "count": 2,
+            "mean": 2.0413153800000003,
+            "median": 2.0413153800000003,
+            "minimum": 1.8239589299999999,
+            "maximum": 2.2586718300000004,
+            "range": 0.4347129000000005
+          },
+          "gap_change_winrate": {
+            "count": 2,
+            "mean": -0.049677373499999955,
+            "median": -0.049677373499999955,
+            "minimum": -0.08688469300000001,
+            "maximum": -0.012470053999999897,
+            "range": 0.07441463900000012
+          },
+          "gap_change_score": {
+            "count": 2,
+            "mean": -0.1239748949999997,
+            "median": -0.1239748949999997,
+            "minimum": -0.80466266,
+            "maximum": 0.5567128700000006,
+            "range": 1.3613755300000006
+          }
+        }
+      },
+      "notes": "Reliable actual candidate with dispersed recent context and mixed spatial evidence."
+    },
+    {
+      "case_id": "park-an-176",
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 176,
+      "expected_case_type": "ambiguous",
+      "player": "W",
+      "actual": "C6",
+      "recommendation": "B14",
+      "phase3a_category": "uncertain",
+      "phase3a_confidence": "low",
+      "actual_order": 2,
+      "actual_visits": 25,
+      "recommended_visits": 14,
+      "actual_visit_share": 0.24271844660194175,
+      "initial_winrate_gap": 0.025204616999999985,
+      "initial_score_gap": -0.09114369,
+      "recommended_branch_reply": "E9",
+      "actual_branch_reply": "B9",
+      "actual_reply_near_recommendation": false,
+      "first_move_gap_winrate": 0.015937984000000016,
+      "first_move_gap_score": -1.6467612000000003,
+      "post_reply_gap_winrate": 0.014368054999999935,
+      "post_reply_gap_score": -2.5175260799999997,
+      "gap_change_winrate": -0.001569929000000081,
+      "gap_change_score": -0.8707648799999994,
+      "query_count": 2,
+      "total_runtime_seconds": 5.240415041800588,
+      "reliable": true,
+      "stability": {
+        "run_count": 2,
+        "usable_run_count": 2,
+        "missing_or_failed_run_count": 0,
+        "recommended_reply": {
+          "moves": [
+            "E9",
+            "E9"
+          ],
+          "regions": [
+            "left",
+            "left"
+          ],
+          "exact_move_stable": true,
+          "region_stable": true
+        },
+        "actual_reply": {
+          "moves": [
+            "B9",
+            "D6"
+          ],
+          "regions": [
+            "left",
+            "bottom-left"
+          ],
+          "exact_move_stable": false,
+          "region_stable": false
+        },
+        "metrics": {
+          "first_move_winrate_gap": {
+            "count": 2,
+            "mean": 0.01330168850000002,
+            "median": 0.01330168850000002,
+            "minimum": 0.010665393000000023,
+            "maximum": 0.015937984000000016,
+            "range": 0.005272590999999993
+          },
+          "first_move_score_gap": {
+            "count": 2,
+            "mean": -1.769650145,
+            "median": -1.769650145,
+            "minimum": -1.8925390899999996,
+            "maximum": -1.6467612000000003,
+            "range": 0.2457778899999994
+          },
+          "post_reply_winrate_gap": {
+            "count": 2,
+            "mean": 0.012753542499999937,
+            "median": 0.012753542499999937,
+            "minimum": 0.011139029999999939,
+            "maximum": 0.014368054999999935,
+            "range": 0.0032290249999999965
+          },
+          "post_reply_score_gap": {
+            "count": 2,
+            "mean": -2.5756488749999997,
+            "median": -2.5756488749999997,
+            "minimum": -2.6337716700000002,
+            "maximum": -2.5175260799999997,
+            "range": 0.11624559000000056
+          },
+          "gap_change_winrate": {
+            "count": 2,
+            "mean": -0.0005481460000000826,
+            "median": -0.0005481460000000826,
+            "minimum": -0.001569929000000081,
+            "maximum": 0.0004736369999999157,
+            "range": 0.0020435659999999967
+          },
+          "gap_change_score": {
+            "count": 2,
+            "mean": -0.80599873,
+            "median": -0.80599873,
+            "minimum": -0.8707648799999994,
+            "maximum": -0.7412325800000006,
+            "range": 0.12953229999999882
+          }
+        }
+      },
+      "notes": "Far move choice with reliable candidates but only a very small objective loss."
+    }
+  ]
+}

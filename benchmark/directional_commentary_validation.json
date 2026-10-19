@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "source": "benchmark/classifier_validation/validation_records.json",
+  "katago_rerun": false,
+  "scope": "Frozen Phase 4B selection rebuilt from saved real Phase 3C analysis artifacts; no new KataGo query was made.",
+  "games": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "artifact_record_count": 63,
+      "selected_moves": [
+        132,
+        139,
+        148,
+        160,
+        173
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "artifact_record_count": 30,
+      "selected_moves": [
+        66,
+        126
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "artifact_record_count": 30,
+      "selected_moves": [
+        68
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "artifact_record_count": 30,
+      "selected_moves": [
+        77,
+        138,
+        144
+      ]
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "artifact_record_count": 30,
+      "selected_moves": [
+        119,
+        127
+      ]
+    }
+  ],
+  "metrics": {
+    "total_highlights": 13,
+    "reliable_recommendation": 13,
+    "directional_evidence_available": 13,
+    "actual_vs_recommendation_region_fact": 12,
+    "reliable_pv_directional_fact": 5,
+    "candidate_distribution_fact": 11,
+    "objective_recommendation_limitation_only": 0
+  },
+  "manual_quality_counts": {
+    "A": 11,
+    "B": 2,
+    "C": 0,
+    "D": 0
+  },
+  "manual_reviewed_count": 13,
+  "highlights": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 132,
+      "player": "W",
+      "actual_move": "N10",
+      "recommended_move": "B7",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "different_direction"
+      ],
+      "auto": "第 132 手造成明顯局勢變化。\n白棋實戰 N10 後，勝率估計下降約 9.7 個百分點，目數評估約下降 1.3 目。\nKataGo 在落子前較推薦 B7。從盤面方向來看，實戰 N10 位於中央，推薦 B7 位於左側，兩者選擇的方向明顯不同。",
+      "detailed": "第 132 手，白棋實戰下在 N10。\n\n勝率由約 33.2% 變為 23.5%，估計下降約 9.7 個百分點；目數評估由落後約 1.9 目變為落後約 3.1 目，估計下降約 1.3 目。\n\nKataGo 在落子前較推薦 B7。\n\n在同一次搜尋中，KataGo 也充分考慮了實戰 N10，搜尋排序較偏好 B7。\n\n勝率評估相差約 24.6 個百分點，目數評估相差約 2.4 目。\n\n從盤面方向來看，實戰 N10 位於中央，推薦 B7 位於左側，兩者選擇的方向明顯不同。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "清楚指出中央與左側的方向差異，並補充候選並非集中單一區域。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 139,
+      "player": "B",
+      "actual_move": "S7",
+      "recommended_move": "M8",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": false,
+      "directional_fact_ids": [
+        "different_direction"
+      ],
+      "auto": "第 139 手造成明顯局勢變化。\n黑棋實戰 S7 後，勝率估計下降約 48.9 個百分點，目數評估約下降 6.7 目。\nKataGo 在落子前較推薦 M8。從盤面方向來看，實戰 S7 位於右側，推薦 M8 位於中央，兩者選擇的方向明顯不同。",
+      "detailed": "第 139 手，黑棋實戰下在 S7。\n\n勝率由約 70.9% 變為 22.0%，估計下降約 48.9 個百分點；目數評估由領先約 2.9 目變為落後約 3.8 目，估計下降約 6.7 目。\n\nKataGo 在落子前較推薦 M8。\n\n從盤面方向來看，實戰 S7 位於右側，推薦 M8 位於中央，兩者選擇的方向明顯不同。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 S7 與推薦 M8 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "即使實戰候選不可直接比較，仍可靠說明右側與中央的選擇差異。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 148,
+      "player": "W",
+      "actual_move": "Q7",
+      "recommended_move": "B7",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "different_direction"
+      ],
+      "auto": "第 148 手造成明顯局勢變化。\n白棋實戰 Q7 後，勝率估計下降約 34.5 個百分點，目數評估約下降 4.4 目。\nKataGo 在落子前較推薦 B7。從盤面方向來看，實戰 Q7 位於右側，推薦 B7 位於左側，兩者選擇的方向明顯不同。",
+      "detailed": "第 148 手，白棋實戰下在 Q7。\n\n勝率由約 81.2% 變為 46.8%，估計下降約 34.5 個百分點；目數評估由領先約 4.1 目變為落後約 0.3 目，估計下降約 4.4 目。\n\nKataGo 在落子前較推薦 B7。\n\n從盤面方向來看，實戰 Q7 位於右側，推薦 B7 位於左側，兩者選擇的方向明顯不同。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 Q7 與推薦 B7 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "右側對左側的方向差異明確，且沒有把分散候選誤說成單一急場。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 160,
+      "player": "W",
+      "actual_move": "L6",
+      "recommended_move": "B7",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": true,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_concentrated",
+        "different_direction",
+        "recommended_pv_stays_local"
+      ],
+      "auto": "第 160 手造成明顯局勢變化。\n白棋實戰 L6 後，勝率估計下降約 65.0 個百分點，目數評估約下降 11.3 目。\nKataGo 在落子前較推薦 B7。從盤面方向來看，實戰 L6 位於下方，推薦 B7 位於左側，兩者選擇的方向明顯不同。",
+      "detailed": "第 160 手，白棋實戰下在 L6。\n\n勝率由約 74.0% 變為 9.1%，估計下降約 65.0 個百分點；目數評估由領先約 6.1 目變為落後約 5.2 目，估計下降約 11.3 目。\n\nKataGo 在落子前較推薦 B7。\n\n從盤面方向來看，實戰 L6 位於下方，推薦 B7 位於左側，兩者選擇的方向明顯不同。\n\n推薦後的主要變化也持續集中在左側一帶，顯示這一帶是這條推薦變化的主要焦點。\n\n較佳候選多集中在左側，KataGo 對這個方向的偏好較一致。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 L6 與推薦 B7 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "方向差異、PV 左側延續與候選集中三項證據一致，資訊完整且保守。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 173,
+      "player": "B",
+      "actual_move": "T17",
+      "recommended_move": "E9",
+      "importance": "important",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": true,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "different_direction",
+        "recommended_pv_stays_local"
+      ],
+      "auto": "第 173 手值得注意。\n黑棋實戰 T17 後，勝率估計下降約 18.3 個百分點，目數評估約下降 5.5 目。\nKataGo 在落子前較推薦 E9。從盤面方向來看，實戰 T17 位於右上，推薦 E9 位於左側，兩者選擇的方向明顯不同。",
+      "detailed": "第 173 手，黑棋實戰下在 T17。\n\n勝率由約 94.4% 變為 76.1%，估計下降約 18.3 個百分點；目數評估由領先約 7.4 目變為領先約 1.9 目，估計下降約 5.5 目。\n\nKataGo 在落子前較推薦 E9。\n\n從盤面方向來看，實戰 T17 位於右上，推薦 E9 位於左側，兩者選擇的方向明顯不同。\n\n推薦後的主要變化也持續集中在左側一帶，顯示這一帶是這條推薦變化的主要焦點。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 T17 與推薦 E9 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "說明右上與左側差異及推薦線焦點，同時保留候選分散的不確定性。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "move_number": 66,
+      "player": "W",
+      "actual_move": "O5",
+      "recommended_move": "P9",
+      "importance": "important",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": true,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "different_direction",
+        "recommended_pv_stays_local"
+      ],
+      "auto": "第 66 手值得注意。\n白棋實戰 O5 後，勝率估計下降約 14.3 個百分點，目數評估約下降 1.0 目。\nKataGo 在落子前較推薦 P9。從盤面方向來看，實戰 O5 位於右下，推薦 P9 位於右側，兩者選擇的方向明顯不同。",
+      "detailed": "第 66 手，白棋實戰下在 O5。\n\n勝率由約 54.6% 變為 40.3%，估計下降約 14.3 個百分點；目數評估由領先約 0.3 目變為落後約 0.7 目，估計下降約 1.0 目。\n\nKataGo 在落子前較推薦 P9。\n\n從盤面方向來看，實戰 O5 位於右下，推薦 P9 位於右側，兩者選擇的方向明顯不同。\n\n推薦後的主要變化也持續集中在右側一帶，顯示這一帶是這條推薦變化的主要焦點。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 O5 與推薦 P9 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "右下與右側的方向差異及 PV 焦點均由現有特徵支持。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "move_number": 126,
+      "player": "W",
+      "actual_move": "R19",
+      "recommended_move": "T18",
+      "importance": "important",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "same_direction"
+      ],
+      "auto": "第 126 手值得注意。\n白棋實戰 R19 後，目數評估約下降 8.4 目。\nKataGo 在落子前較推薦 T18。實戰 R19 與推薦 T18 都位於右上，兩者的大方向相近。",
+      "detailed": "第 126 手，白棋實戰下在 R19。\n\n勝率由約 0.1% 變為 0.1%；目數評估由落後約 28.7 目變為落後約 37.1 目，估計下降約 8.4 目。\n\nKataGo 在落子前較推薦 T18。\n\n實戰 R19 與推薦 T18 都位於右上，兩者的大方向相近。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 R19 與推薦 T18 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "B",
+        "note": "同為右上的描述有用，但因候選分散，只能提供較有限的廣義方向資訊。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[芝野虎丸]1762757529010001439.sgf",
+      "move_number": 68,
+      "player": "W",
+      "actual_move": "J4",
+      "recommended_move": "B2",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": false,
+      "directional_fact_ids": [
+        "different_direction"
+      ],
+      "auto": "第 68 手造成明顯局勢變化。\n白棋實戰 J4 後，勝率估計下降約 45.0 個百分點，目數評估約下降 4.3 目。\nKataGo 在落子前較推薦 B2。從盤面方向來看，實戰 J4 位於下方，推薦 B2 位於左下，兩者選擇的方向明顯不同。",
+      "detailed": "第 68 手，白棋實戰下在 J4。\n\n勝率由約 58.4% 變為 13.4%，估計下降約 45.0 個百分點；目數評估由領先約 0.6 目變為落後約 3.7 目，估計下降約 4.3 目。\n\nKataGo 在落子前較推薦 B2。\n\n從盤面方向來看，實戰 J4 位於下方，推薦 B2 位於左下，兩者選擇的方向明顯不同。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 J4 與推薦 B2 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "下方與左下的不同選擇可直接觀察，沒有加入不受支持的棋理。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 77,
+      "player": "B",
+      "actual_move": "M6",
+      "recommended_move": "M13",
+      "importance": "important",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "different_direction"
+      ],
+      "auto": "第 77 手值得注意。\n黑棋實戰 M6 後，勝率估計下降約 20.0 個百分點，目數評估約下降 2.3 目。\nKataGo 在落子前較推薦 M13。從盤面方向來看，實戰 M6 位於下方，推薦 M13 位於上方，兩者選擇的方向明顯不同。",
+      "detailed": "第 77 手，黑棋實戰下在 M6。\n\n勝率由約 75.2% 變為 55.2%，估計下降約 20.0 個百分點；目數評估由領先約 2.8 目變為領先約 0.5 目，估計下降約 2.3 目。\n\nKataGo 在落子前較推薦 M13。\n\n從盤面方向來看，實戰 M6 位於下方，推薦 M13 位於上方，兩者選擇的方向明顯不同。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 M6 與推薦 M13 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "在實戰候選缺失時仍能說明下方與上方的方向差異，正中本階段目標。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 138,
+      "player": "W",
+      "actual_move": "K9",
+      "recommended_move": "J6",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": false,
+      "pv_directional_fact": true,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "recommended_pv_stays_local"
+      ],
+      "auto": "第 138 手造成明顯局勢變化。\n白棋實戰 K9 後，目數評估約下降 12.1 目。\nKataGo 在落子前較推薦 J6。推薦後的主要變化也持續集中在中央附近，顯示這一帶是這條推薦變化的主要焦點。",
+      "detailed": "第 138 手，白棋實戰下在 K9。\n\n勝率由約 1.3% 變為 1.7%；目數評估由落後約 13.9 目變為落後約 26.0 目，估計下降約 12.1 目。\n\nKataGo 在落子前較推薦 J6。\n\n在同一次搜尋中，KataGo 也充分考慮了實戰 K9，搜尋排序較偏好 J6。\n\n目數評估相差約 13.7 目。\n\n推薦後的主要變化也持續集中在中央附近，顯示這一帶是這條推薦變化的主要焦點。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "B",
+        "note": "實戰與推薦跨區但距離近，系統正確 abstain；PV 中央焦點仍提供部分價值。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 144,
+      "player": "W",
+      "actual_move": "H6",
+      "recommended_move": "H14",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "different_direction"
+      ],
+      "auto": "第 144 手造成明顯局勢變化。\n白棋實戰 H6 後，勝率估計下降約 2.4 個百分點，目數評估約下降 26.9 目。\nKataGo 在落子前較推薦 H14。從盤面方向來看，實戰 H6 位於下方，推薦 H14 位於上方，兩者選擇的方向明顯不同。",
+      "detailed": "第 144 手，白棋實戰下在 H6。\n\n勝率由約 2.7% 變為 0.3%，估計下降約 2.4 個百分點；目數評估由落後約 27.2 目變為落後約 54.1 目，估計下降約 26.9 目。\n\nKataGo 在落子前較推薦 H14。\n\n從盤面方向來看，實戰 H6 位於下方，推薦 H14 位於上方，兩者選擇的方向明顯不同。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 H6 與推薦 H14 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "下方與上方的方向差異清楚，限制放在正向證據之後。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 119,
+      "player": "B",
+      "actual_move": "K14",
+      "recommended_move": "L13",
+      "importance": "decisive",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": true,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_concentrated",
+        "recommended_pv_stays_local",
+        "same_direction"
+      ],
+      "auto": "第 119 手造成明顯局勢變化。\n黑棋實戰 K14 後，勝率估計下降約 0.1 個百分點，目數評估約下降 19.4 目。\nKataGo 在落子前較推薦 L13。實戰 K14 與推薦 L13 都位於上方，兩者的大方向相近。",
+      "detailed": "第 119 手，黑棋實戰下在 K14。\n\n勝率由約 0.3% 變為 0.2%，估計下降約 0.1 個百分點；目數評估由落後約 29.5 目變為落後約 49.0 目，估計下降約 19.4 目。\n\nKataGo 在落子前較推薦 L13。\n\n在同一次搜尋中，KataGo 也充分考慮了實戰 K14，搜尋排序較偏好 L13。\n\n目數評估相差約 17.7 目。\n\n實戰 K14 與推薦 L13 都位於上方，兩者的大方向相近。\n\n推薦後的主要變化也持續集中在上方一帶，顯示這一帶是這條推薦變化的主要焦點。\n\n較佳候選多集中在上方，KataGo 對這個方向的偏好較一致。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "同方向、PV 延續與候選集中相互支持，未把幾何描述升級成因果棋理。"
+      }
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 127,
+      "player": "B",
+      "actual_move": "J9",
+      "recommended_move": "S18",
+      "importance": "important",
+      "recommendation_reliable": true,
+      "directional_available": true,
+      "actual_recommendation_fact": true,
+      "pv_directional_fact": false,
+      "candidate_distribution_fact": true,
+      "directional_fact_ids": [
+        "candidates_distributed",
+        "different_direction"
+      ],
+      "auto": "第 127 手值得注意。\n黑棋實戰 J9 後，目數評估約下降 11.2 目。\nKataGo 在落子前較推薦 S18。從盤面方向來看，實戰 J9 位於中央，推薦 S18 位於右上，兩者選擇的方向明顯不同。",
+      "detailed": "第 127 手，黑棋實戰下在 J9。\n\n勝率由約 0.1% 變為 0.1%；目數評估由落後約 52.7 目變為落後約 63.8 目，估計下降約 11.2 目。\n\nKataGo 在落子前較推薦 S18。\n\n從盤面方向來看，實戰 J9 位於中央，推薦 S18 位於右上，兩者選擇的方向明顯不同。\n\n較佳候選分布在不同區域，沒有呈現單一而明確的落子方向。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 J9 與推薦 S18 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。",
+      "manual_review": {
+        "grade": "A",
+        "note": "中央與右上的差異明確，候選分散資訊能正確限制解讀強度。"
+      }
+    }
+  ],
+  "known_move_130": {
+    "source": "historical M6/E14 move-130 golden case",
+    "note": "The saved Phase 3C Park-vs-An artifact has M11/B7 at move 130; the requested M6/E14 case is preserved as the historical golden fixture and is not relabeled as urgent-vs-big.",
+    "directional_evidence": {
+      "schema_version": 1,
+      "available": true,
+      "actual": {
+        "move": "M6",
+        "region": "bottom"
+      },
+      "recommendation": {
+        "move": "E14",
+        "region": "top-left",
+        "reliable": true
+      },
+      "relationship": {
+        "available": true,
+        "same_region": false,
+        "distance_class": "far",
+        "direction_difference": "different"
+      },
+      "recommended_pv": {
+        "available": true,
+        "stays_local": true,
+        "dominant_region": "top-left",
+        "local_ratio": 1.0,
+        "valid_move_count": 3,
+        "pass_move_count": 0
+      },
+      "candidate_distribution": {
+        "available": false,
+        "dominant_region": null,
+        "concentration_ratio": null,
+        "reliable_candidate_count": 0,
+        "distinct_region_count": 0,
+        "is_concentrated": null
+      },
+      "facts": [
+        {
+          "id": "different_direction",
+          "actual_region": "bottom",
+          "recommended_region": "top-left",
+          "distance_class": "far"
+        },
+        {
+          "id": "recommended_pv_stays_local",
+          "region": "top-left"
+        }
+      ],
+      "limitations": [
+        "candidate_distribution_unavailable"
+      ]
+    },
+    "auto": "第 130 手值得注意。\n白棋實戰 M6 後，勝率估計下降約 8.3 個百分點，目數評估約下降 0.6 目。\nKataGo 在落子前較推薦 E14。從盤面方向來看，實戰 M6 位於下方，推薦 E14 位於左上，兩者選擇的方向明顯不同。",
+    "detailed": "第 130 手，白棋實戰下在 M6。\n\n勝率由約 82.6% 變為 74.3%，估計下降約 8.3 個百分點；目數評估由領先約 3.0 目變為領先約 2.4 目，估計下降約 0.6 目。\n\nKataGo 在落子前較推薦 E14。\n\n從盤面方向來看，實戰 M6 位於下方，推薦 E14 位於左上，兩者選擇的方向明顯不同。\n\n推薦後的主要變化也持續集中在左上附近，顯示這一帶是這條推薦變化的主要焦點。\n\nKataGo 的推薦變化已保留，可使用「查看推薦變化圖」在棋盤上查看。\n\n目前無法可靠地直接比較實戰 M6 與推薦 E14 本身的評價差距。\n\n至於這個差異背後的具體棋理，目前證據不足以可靠區分，因此不再進一步猜測。"
+  }
+}

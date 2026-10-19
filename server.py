@@ -11,8 +11,15 @@ import queue
 from collections import deque
 from dataclasses import dataclass, field
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 from sgfmill import sgf
+from backend_startup import (
+    API_SCHEMA_VERSION,
+    INSTANCE_TOKEN_HEADER,
+    SERVICE_IDENTITY,
+    BackendIdentity,
+    development_startup_config,
+    parse_backend_startup_args,
+)
 from sgf_utils import (
     get_capture_counts,
     get_initial_stones_from_game,
@@ -24,15 +31,40 @@ from analysis_logic import (
     build_move_analyses,
     thresholds_as_dict,
 )
+from review_selection import build_game_review
+from review_summary import build_review_summary
+from runtime_paths import RuntimePathError, resolve_runtime_paths
+from runtime_processes import (
+    install_termination_handlers,
+    katago_popen_kwargs,
+    prepare_backend_process_group,
+    start_parent_watchdog,
+)
+
+
+STARTUP_CONFIG = (
+    parse_backend_startup_args()
+    if __name__ == "__main__"
+    else development_startup_config()
+)
+try:
+    RUNTIME_PATHS = resolve_runtime_paths(
+        resource_root=STARTUP_CONFIG.resource_root,
+        katago_executable=STARTUP_CONFIG.katago_executable,
+    )
+except RuntimePathError as exc:
+    if __name__ == "__main__":
+        raise SystemExit(f"LogosGo backend 啟動失敗：{exc}") from exc
+    raise
 
 app = Flask(__name__)
-CORS(app)
+BACKEND_IDENTITY = BackendIdentity(STARTUP_CONFIG.instance_token)
 
-engine = LogosEngine(corpus_path='logosgo_corpus_full.csv')
+engine = LogosEngine(corpus_path=str(RUNTIME_PATHS.corpus_file))
 
-KATAGO_EXEC = "katago"
-MODEL_FILE = "/Users/ouo1010/Desktop/go_project/model.bin.gz"
-CONFIG_FILE = "/Users/ouo1010/Desktop/go_project/analysis.cfg"
+KATAGO_EXEC = str(RUNTIME_PATHS.katago_executable)
+MODEL_FILE = str(RUNTIME_PATHS.model_file)
+CONFIG_FILE = str(RUNTIME_PATHS.config_file)
 
 # A slow search is allowed to run indefinitely while KataGo keeps sending
 # reportDuringSearch heartbeats. Only complete inactivity is treated as a hang.
@@ -69,12 +101,14 @@ class KataGoClient:
         *,
         label="shared",
         override_config=None,
+        working_directory=None,
     ):
         self.executable = executable
         self.model_file = model_file
         self.config_file = config_file
         self.label = label
         self.override_config = override_config
+        self.working_directory = working_directory
         self._process = None
         self._start_lock = threading.Lock()
         self._write_lock = threading.Lock()
@@ -108,6 +142,8 @@ class KataGoClient:
             if self.override_config:
                 cmd.extend(["-override-config", self.override_config])
             print(f"啟動 {self.label} KataGo: {cmd}")
+            if self.working_directory:
+                os.makedirs(self.working_directory, exist_ok=True)
             process = subprocess.Popen(
                 cmd,
                 stdin=subprocess.PIPE,
@@ -115,6 +151,8 @@ class KataGoClient:
                 stderr=subprocess.PIPE,
                 text=True,
                 bufsize=1,
+                cwd=self.working_directory,
+                **katago_popen_kwargs(),
             )
             self._process = process
             threading.Thread(
@@ -328,6 +366,7 @@ katago_client = KataGoClient(
     MODEL_FILE,
     CONFIG_FILE,
     label="背景 16×4",
+    working_directory=str(RUNTIME_PATHS.writable.logs),
 )
 position_katago_client = KataGoClient(
     KATAGO_EXEC,
@@ -338,6 +377,7 @@ position_katago_client = KataGoClient(
         f"numAnalysisThreads={POSITION_ANALYSIS_THREADS},"
         f"numSearchThreadsPerAnalysisThread={POSITION_SEARCH_THREADS}"
     ),
+    working_directory=str(RUNTIME_PATHS.writable.logs),
 )
 atexit.register(katago_client.close)
 atexit.register(position_katago_client.close)
@@ -483,6 +523,39 @@ position_request_active = threading.Event()
 background_query_paused = threading.Event()
 background_query_paused.set()
 background_lane_lock = threading.Lock()
+
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Cheap identity/readiness check; it never starts KataGo."""
+
+    provided_token = request.headers.get(INSTANCE_TOKEN_HEADER)
+    return jsonify({
+        "service": SERVICE_IDENTITY,
+        "api_schema_version": API_SCHEMA_VERSION,
+        "ready": True,
+        "instance_id": BACKEND_IDENTITY.instance_id,
+        "token_verified": BACKEND_IDENTITY.verify(provided_token),
+    })
+
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    """Authenticated graceful-stop hook for an owning native Runner."""
+
+    provided_token = request.headers.get(INSTANCE_TOKEN_HEADER)
+    if not BACKEND_IDENTITY.verify(provided_token):
+        return jsonify({"status": "error", "message": "instance token 驗證失敗"}), 403
+
+    def stop_after_response():
+        time.sleep(0.05)
+        _terminate_backend(0)
+
+    threading.Thread(target=stop_after_response, daemon=True).start()
+    return jsonify({
+        "status": "shutting_down",
+        "instance_id": BACKEND_IDENTITY.instance_id,
+    })
 
 
 def _begin_position_request(client_id, request_id, query_id):
@@ -639,10 +712,16 @@ def _run_analysis_job(job):
             for item in move_analyses
             if item["importance"] in ("important", "decisive")
         ]
+        game_review = build_game_review(
+            move_analyses,
+            total_moves=len(all_moves),
+        )
+        game_review["review_summary"] = build_review_summary(game_review)
         result = {
             "winrates": winrates,
             "scores": scores,
             "move_analyses": move_analyses,
+            "game_review": game_review,
             "important_moves": important_moves,
             "blunders": important_moves,
             "importance_counts": importance_counts,
@@ -1092,5 +1171,38 @@ def get_commentary():
         return jsonify({"error": str(e)}), 500
 
 
+def run_backend():
+    if STARTUP_CONFIG.parent_pid is not None:
+        prepare_backend_process_group()
+
+        def stop_for_parent_exit():
+            print("Runner 已離開，停止 LogosGo backend")
+            _terminate_backend(0)
+
+        start_parent_watchdog(
+            STARTUP_CONFIG.parent_pid,
+            stop_for_parent_exit,
+        )
+
+    app.run(
+        host=STARTUP_CONFIG.host,
+        port=STARTUP_CONFIG.port,
+        debug=STARTUP_CONFIG.debug,
+        use_reloader=False,
+    )
+
+
+def _terminate_backend(exit_code=0):
+    katago_client.close()
+    position_katago_client.close()
+    os._exit(exit_code)
+
+
+def _handle_termination_signal(signum, _frame):
+    print(f"收到終止訊號 {signum}，正在關閉 KataGo")
+    _terminate_backend(0)
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    install_termination_handlers(_handle_termination_signal)
+    run_backend()

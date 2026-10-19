@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "perspective_labels": {
+    "correct": "all mover-perspective signs, labels, and wording are correct",
+    "suspicious": "requires follow-up",
+    "incorrect": "material perspective or sign error"
+  },
+  "reviews": [
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 139,
+      "perspective": "correct",
+      "note": "Black 70.9%→22.0% and +2.9→-3.8 are rendered as Black deterioration; direction is color-neutral."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 173,
+      "perspective": "correct",
+      "note": "Black 94.4%→76.1% and score loss 5.5 are correctly signed; candidate limitation and PV direction are safe."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 77,
+      "perspective": "correct",
+      "note": "Black 75.2%→55.2% and +2.8→+0.5 are correctly described as losses."
+    },
+    {
+      "sgf": "棋譜/[朴进率]vs[朴廷桓]1766236878010001427.sgf",
+      "move_number": 119,
+      "perspective": "correct",
+      "note": "Black near-zero winrate and increasingly negative score remain Black-relative; direct score gap and upper-area direction are correct."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 132,
+      "perspective": "correct",
+      "note": "White 33.2%→23.5% and -1.9→-3.1 are mover-normalized; direct candidate gap has the correct White sign."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+      "move_number": 160,
+      "perspective": "correct",
+      "note": "White 74.0%→9.1% and +6.1→-5.2 correctly show severe deterioration; no raw-Black leakage."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[朴河旼]1767960653010001940.sgf",
+      "move_number": 66,
+      "perspective": "correct",
+      "note": "White 54.6%→40.3% and +0.3→-0.7 are correctly signed; right-side geometry is unaffected by color."
+    },
+    {
+      "sgf": "棋譜/[朴廷桓]vs[许皓鋐]1766559064010001206.sgf",
+      "move_number": 138,
+      "perspective": "correct",
+      "note": "White winrate does not falsely claim decline when it rises slightly; the 12.1-point score deterioration is correctly reported."
+    },
+    {
+      "sgf": "historical M6/E14 move-130 golden case",
+      "move_number": 130,
+      "perspective": "correct",
+      "note": "White 82.6%→74.3% and +3.0→+2.4 are correctly rendered; lower vs upper-left and local PV facts are color-neutral."
+    }
+  ]
+}

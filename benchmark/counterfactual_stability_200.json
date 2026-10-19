@@ -1,0 +1,1067 @@
+{
+  "schema_version": 1,
+  "visits": 200,
+  "process_configuration": "1x16",
+  "case_count": 6,
+  "total_query_count": 12,
+  "total_case_runtime_seconds": 62.656311289872974,
+  "wall_clock_seconds": 62.718240374699235,
+  "cases": [
+    {
+      "case": {
+        "id": "kim-park-130",
+        "sgf": "棋譜/[金升宰]vs[朴廷桓]1764341261010001550.sgf",
+        "move_number": 130,
+        "recommended_move": "E14",
+        "expected_case_type": "negative",
+        "selection_note": "Known immediate-return counterexample: prior prototype reply was P14, far from E14."
+      },
+      "phase3a": null,
+      "actual_candidate_quality": null,
+      "experiment": {
+        "visits": 200,
+        "query_count": 2,
+        "base_query_runtime_seconds": null,
+        "branch_runtime_seconds": {
+          "recommended_branch": 7.968180125113577,
+          "actual_branch": 5.6557631669566035
+        },
+        "total_runtime_seconds": 13.62394329207018,
+        "warm_process": false,
+        "include_ownership": false,
+        "focus_moves_used": false
+      },
+      "counterfactual_evidence": {
+        "schema_version": 1,
+        "value_perspective": {
+          "raw": "black",
+          "normalized": "original_player",
+          "original_player": "W"
+        },
+        "base": {
+          "move_count": 129,
+          "side_to_move": "W",
+          "recommended_move": "E14",
+          "actual_move": "M6",
+          "board_size": 19,
+          "requested_visits_per_branch": 200
+        },
+        "recommended_branch": {
+          "name": "recommended_branch",
+          "first_move": "E14",
+          "first_player": "W",
+          "base_move_count": 129,
+          "after_first_move_count": 130,
+          "after_reply_move_count": 131,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.226593933,
+            "black_score_lead": -1.19364461,
+            "mover_winrate": 0.773406067,
+            "mover_score_lead": 1.19364461,
+            "visits": 215
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "D1",
+            "visits": 116,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "D1",
+              "D2",
+              "B1",
+              "C3",
+              "A2",
+              "C1",
+              "F13",
+              "G11"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.247386173,
+              "black_score_lead": -1.0606106,
+              "mover_winrate": 0.752613827,
+              "mover_score_lead": 1.0606106
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "actual_branch": {
+          "name": "actual_branch",
+          "first_move": "M6",
+          "first_player": "W",
+          "base_move_count": 129,
+          "after_first_move_count": 130,
+          "after_reply_move_count": 131,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.300462647,
+            "black_score_lead": -0.746231398,
+            "mover_winrate": 0.699537353,
+            "mover_score_lead": 0.746231398,
+            "visits": 214
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "D1",
+            "visits": 103,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "D1",
+              "D2",
+              "B1",
+              "C3",
+              "A2",
+              "C1",
+              "P14",
+              "O13"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.328624315,
+              "black_score_lead": -0.537709412,
+              "mover_winrate": 0.671375685,
+              "mover_score_lead": 0.537709412
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "comparison": {
+          "usable": true,
+          "positive_gap_means": "recommended_branch_better_for_original_player",
+          "after_first_move": {
+            "mover_winrate_gap": 0.07386871400000006,
+            "mover_score_gap": 0.44741321199999995
+          },
+          "after_opponent_reply": {
+            "mover_winrate_gap": 0.08123814200000001,
+            "mover_score_gap": 0.522901188
+          },
+          "gap_change_after_replies": {
+            "mover_winrate_gap_change": 0.007369427999999956,
+            "mover_score_gap_change": 0.07548797600000001
+          },
+          "actual_reply_vs_recommendation": {
+            "usable": true,
+            "unusable_reason": null,
+            "same_region": false,
+            "manhattan_distance": 14,
+            "chebyshev_distance": 13,
+            "locality": "far"
+          }
+        },
+        "reliability": {
+          "usable": true,
+          "branch_depth_equal": true,
+          "side_to_move_comparable": true,
+          "visit_budget_equal": true,
+          "stability_assessed": false,
+          "reasons": []
+        },
+        "limitations": [
+          "single_search_stability_not_measured"
+        ]
+      }
+    },
+    {
+      "case": {
+        "id": "park-an-160",
+        "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+        "move_number": 160,
+        "recommended_move": "B7",
+        "expected_case_type": "suspected_positive",
+        "selection_note": "Large observed loss and cached opponent reply returned near the recommendation area."
+      },
+      "phase3a": null,
+      "actual_candidate_quality": null,
+      "experiment": {
+        "visits": 200,
+        "query_count": 2,
+        "base_query_runtime_seconds": null,
+        "branch_runtime_seconds": {
+          "recommended_branch": 4.900329999625683,
+          "actual_branch": 5.6741037499159575
+        },
+        "total_runtime_seconds": 10.57443374954164,
+        "warm_process": true,
+        "include_ownership": false,
+        "focus_moves_used": false
+      },
+      "counterfactual_evidence": {
+        "schema_version": 1,
+        "value_perspective": {
+          "raw": "black",
+          "normalized": "original_player",
+          "original_player": "W"
+        },
+        "base": {
+          "move_count": 159,
+          "side_to_move": "W",
+          "recommended_move": "B7",
+          "actual_move": "L6",
+          "board_size": 19,
+          "requested_visits_per_branch": 200
+        },
+        "recommended_branch": {
+          "name": "recommended_branch",
+          "first_move": "B7",
+          "first_player": "W",
+          "base_move_count": 159,
+          "after_first_move_count": 160,
+          "after_reply_move_count": 161,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.271596846,
+            "black_score_lead": -2.99636983,
+            "mover_winrate": 0.728403154,
+            "mover_score_lead": 2.99636983,
+            "visits": 215
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "B6",
+            "visits": 64,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "B6",
+              "B12",
+              "A13",
+              "B10",
+              "A11",
+              "B9",
+              "C6"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.321416751,
+              "black_score_lead": -2.72207006,
+              "mover_winrate": 0.678583249,
+              "mover_score_lead": 2.72207006
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "actual_branch": {
+          "name": "actual_branch",
+          "first_move": "L6",
+          "first_player": "W",
+          "base_move_count": 159,
+          "after_first_move_count": 160,
+          "after_reply_move_count": 161,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.866106763,
+            "black_score_lead": 4.72281453,
+            "mover_winrate": 0.133893237,
+            "mover_score_lead": -4.72281453,
+            "visits": 214
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "E9",
+            "visits": 77,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "E9",
+              "B7",
+              "B6",
+              "B12",
+              "B9",
+              "A13",
+              "A11",
+              "A9"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.883556039,
+              "black_score_lead": 5.11187354,
+              "mover_winrate": 0.11644396099999998,
+              "mover_score_lead": -5.11187354
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "comparison": {
+          "usable": true,
+          "positive_gap_means": "recommended_branch_better_for_original_player",
+          "after_first_move": {
+            "mover_winrate_gap": 0.594509917,
+            "mover_score_gap": 7.71918436
+          },
+          "after_opponent_reply": {
+            "mover_winrate_gap": 0.562139288,
+            "mover_score_gap": 7.8339436000000005
+          },
+          "gap_change_after_replies": {
+            "mover_winrate_gap_change": -0.032370628999999984,
+            "mover_score_gap_change": 0.1147592400000006
+          },
+          "actual_reply_vs_recommendation": {
+            "usable": true,
+            "unusable_reason": null,
+            "same_region": true,
+            "manhattan_distance": 5,
+            "chebyshev_distance": 3,
+            "locality": "near"
+          }
+        },
+        "reliability": {
+          "usable": true,
+          "branch_depth_equal": true,
+          "side_to_move_comparable": true,
+          "visit_budget_equal": true,
+          "stability_assessed": false,
+          "reasons": []
+        },
+        "limitations": [
+          "single_search_stability_not_measured"
+        ]
+      }
+    },
+    {
+      "case": {
+        "id": "park-an-173",
+        "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+        "move_number": 173,
+        "recommended_move": "E9",
+        "expected_case_type": "suspected_positive",
+        "selection_note": "Important observed loss and cached reply near the recommendation area."
+      },
+      "phase3a": null,
+      "actual_candidate_quality": null,
+      "experiment": {
+        "visits": 200,
+        "query_count": 2,
+        "base_query_runtime_seconds": null,
+        "branch_runtime_seconds": {
+          "recommended_branch": 5.089747666846961,
+          "actual_branch": 5.050092082936317
+        },
+        "total_runtime_seconds": 10.139839749783278,
+        "warm_process": true,
+        "include_ownership": false,
+        "focus_moves_used": false
+      },
+      "counterfactual_evidence": {
+        "schema_version": 1,
+        "value_perspective": {
+          "raw": "black",
+          "normalized": "original_player",
+          "original_player": "B"
+        },
+        "base": {
+          "move_count": 172,
+          "side_to_move": "B",
+          "recommended_move": "E9",
+          "actual_move": "T17",
+          "board_size": 19,
+          "requested_visits_per_branch": 200
+        },
+        "recommended_branch": {
+          "name": "recommended_branch",
+          "first_move": "E9",
+          "first_player": "B",
+          "base_move_count": 172,
+          "after_first_move_count": 173,
+          "after_reply_move_count": 174,
+          "requested_visits": 200,
+          "side_to_move_after_first": "W",
+          "side_to_move_after_reply": "B",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.924137368,
+            "black_score_lead": 7.43706568,
+            "mover_winrate": 0.924137368,
+            "mover_score_lead": 7.43706568,
+            "visits": 213
+          },
+          "opponent_reply": {
+            "player": "W",
+            "move": "B12",
+            "visits": 86,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "B12",
+              "A13",
+              "B10",
+              "A11",
+              "B7",
+              "B6",
+              "B9",
+              "C6"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.902381712,
+              "black_score_lead": 5.67808113,
+              "mover_winrate": 0.902381712,
+              "mover_score_lead": 5.67808113
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "actual_branch": {
+          "name": "actual_branch",
+          "first_move": "T17",
+          "first_player": "B",
+          "base_move_count": 172,
+          "after_first_move_count": 173,
+          "after_reply_move_count": 174,
+          "requested_visits": 200,
+          "side_to_move_after_first": "W",
+          "side_to_move_after_reply": "B",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.780363331,
+            "black_score_lead": 1.96151563,
+            "mover_winrate": 0.780363331,
+            "mover_score_lead": 1.96151563,
+            "visits": 212
+          },
+          "opponent_reply": {
+            "player": "W",
+            "move": "B14",
+            "visits": 16,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "B14",
+              "A14",
+              "B7",
+              "B6",
+              "A13",
+              "B13"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.720075148,
+              "black_score_lead": 1.65384852,
+              "mover_winrate": 0.720075148,
+              "mover_score_lead": 1.65384852
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "comparison": {
+          "usable": true,
+          "positive_gap_means": "recommended_branch_better_for_original_player",
+          "after_first_move": {
+            "mover_winrate_gap": 0.14377403700000002,
+            "mover_score_gap": 5.47555005
+          },
+          "after_opponent_reply": {
+            "mover_winrate_gap": 0.1823065639999999,
+            "mover_score_gap": 4.02423261
+          },
+          "gap_change_after_replies": {
+            "mover_winrate_gap_change": 0.03853252699999987,
+            "mover_score_gap_change": -1.4513174399999995
+          },
+          "actual_reply_vs_recommendation": {
+            "usable": true,
+            "unusable_reason": null,
+            "same_region": false,
+            "manhattan_distance": 8,
+            "chebyshev_distance": 5,
+            "locality": "medium"
+          }
+        },
+        "reliability": {
+          "usable": true,
+          "branch_depth_equal": true,
+          "side_to_move_comparable": true,
+          "visit_budget_equal": true,
+          "stability_assessed": false,
+          "reasons": []
+        },
+        "limitations": [
+          "single_search_stability_not_measured"
+        ]
+      }
+    },
+    {
+      "case": {
+        "id": "park-an-146",
+        "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+        "move_number": 146,
+        "recommended_move": "B7",
+        "expected_case_type": "negative",
+        "selection_note": "Actual was reliable and cached opponent reply stayed near the actual local fight."
+      },
+      "phase3a": null,
+      "actual_candidate_quality": null,
+      "experiment": {
+        "visits": 200,
+        "query_count": 2,
+        "base_query_runtime_seconds": null,
+        "branch_runtime_seconds": {
+          "recommended_branch": 4.6802584156394005,
+          "actual_branch": 4.936174499802291
+        },
+        "total_runtime_seconds": 9.616432915441692,
+        "warm_process": true,
+        "include_ownership": false,
+        "focus_moves_used": false
+      },
+      "counterfactual_evidence": {
+        "schema_version": 1,
+        "value_perspective": {
+          "raw": "black",
+          "normalized": "original_player",
+          "original_player": "W"
+        },
+        "base": {
+          "move_count": 145,
+          "side_to_move": "W",
+          "recommended_move": "B7",
+          "actual_move": "R7",
+          "board_size": 19,
+          "requested_visits_per_branch": 200
+        },
+        "recommended_branch": {
+          "name": "recommended_branch",
+          "first_move": "B7",
+          "first_player": "W",
+          "base_move_count": 145,
+          "after_first_move_count": 146,
+          "after_reply_move_count": 147,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.167567904,
+            "black_score_lead": -4.19754566,
+            "mover_winrate": 0.832432096,
+            "mover_score_lead": 4.19754566,
+            "visits": 215
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "B6",
+            "visits": 38,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "B6",
+              "A13",
+              "B13",
+              "B10",
+              "A14",
+              "B9",
+              "C6"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.213736738,
+              "black_score_lead": -4.46260493,
+              "mover_winrate": 0.786263262,
+              "mover_score_lead": 4.46260493
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "actual_branch": {
+          "name": "actual_branch",
+          "first_move": "R7",
+          "first_player": "W",
+          "base_move_count": 145,
+          "after_first_move_count": 146,
+          "after_reply_move_count": 147,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.292065154,
+            "black_score_lead": -2.4800549,
+            "mover_winrate": 0.707934846,
+            "mover_score_lead": 2.4800549,
+            "visits": 214
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "O7",
+            "visits": 103,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "O7",
+              "B7",
+              "B9",
+              "L8",
+              "S6",
+              "G13"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.295983992,
+              "black_score_lead": -2.47376587,
+              "mover_winrate": 0.704016008,
+              "mover_score_lead": 2.47376587
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "comparison": {
+          "usable": true,
+          "positive_gap_means": "recommended_branch_better_for_original_player",
+          "after_first_move": {
+            "mover_winrate_gap": 0.12449725,
+            "mover_score_gap": 1.7174907600000004
+          },
+          "after_opponent_reply": {
+            "mover_winrate_gap": 0.08224725399999999,
+            "mover_score_gap": 1.9888390600000005
+          },
+          "gap_change_after_replies": {
+            "mover_winrate_gap_change": -0.04224999600000001,
+            "mover_score_gap_change": 0.2713483000000001
+          },
+          "actual_reply_vs_recommendation": {
+            "usable": true,
+            "unusable_reason": null,
+            "same_region": false,
+            "manhattan_distance": 12,
+            "chebyshev_distance": 12,
+            "locality": "far"
+          }
+        },
+        "reliability": {
+          "usable": true,
+          "branch_depth_equal": true,
+          "side_to_move_comparable": true,
+          "visit_budget_equal": true,
+          "stability_assessed": false,
+          "reasons": []
+        },
+        "limitations": [
+          "single_search_stability_not_measured"
+        ]
+      }
+    },
+    {
+      "case": {
+        "id": "park-an-166",
+        "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+        "move_number": 166,
+        "recommended_move": "B7",
+        "expected_case_type": "ambiguous",
+        "selection_note": "Reliable actual candidate with dispersed recent context and mixed spatial evidence."
+      },
+      "phase3a": null,
+      "actual_candidate_quality": null,
+      "experiment": {
+        "visits": 200,
+        "query_count": 2,
+        "base_query_runtime_seconds": null,
+        "branch_runtime_seconds": {
+          "recommended_branch": 4.703082124702632,
+          "actual_branch": 4.9861256666481495
+        },
+        "total_runtime_seconds": 9.689207791350782,
+        "warm_process": true,
+        "include_ownership": false,
+        "focus_moves_used": false
+      },
+      "counterfactual_evidence": {
+        "schema_version": 1,
+        "value_perspective": {
+          "raw": "black",
+          "normalized": "original_player",
+          "original_player": "W"
+        },
+        "base": {
+          "move_count": 165,
+          "side_to_move": "W",
+          "recommended_move": "B7",
+          "actual_move": "Q18",
+          "board_size": 19,
+          "requested_visits_per_branch": 200
+        },
+        "recommended_branch": {
+          "name": "recommended_branch",
+          "first_move": "B7",
+          "first_player": "W",
+          "base_move_count": 165,
+          "after_first_move_count": 166,
+          "after_reply_move_count": 167,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.796308561,
+            "black_score_lead": 3.4192278,
+            "mover_winrate": 0.20369143899999997,
+            "mover_score_lead": -3.4192278,
+            "visits": 215
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "C6",
+            "visits": 25,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "C6",
+              "B10",
+              "B9",
+              "B12",
+              "A10"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.825617387,
+              "black_score_lead": 3.07662068,
+              "mover_winrate": 0.17438261300000002,
+              "mover_score_lead": -3.07662068
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "actual_branch": {
+          "name": "actual_branch",
+          "first_move": "Q18",
+          "first_player": "W",
+          "base_move_count": 165,
+          "after_first_move_count": 166,
+          "after_reply_move_count": 167,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.886414694,
+            "black_score_lead": 5.12118676,
+            "mover_winrate": 0.11358530600000005,
+            "mover_score_lead": -5.12118676,
+            "visits": 214
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "Q17",
+            "visits": 67,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "Q17",
+              "B10",
+              "A13",
+              "P18",
+              "E9",
+              "B7"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.903253466,
+              "black_score_lead": 5.33529251,
+              "mover_winrate": 0.096746534,
+              "mover_score_lead": -5.33529251
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "comparison": {
+          "usable": true,
+          "positive_gap_means": "recommended_branch_better_for_original_player",
+          "after_first_move": {
+            "mover_winrate_gap": 0.09010613299999992,
+            "mover_score_gap": 1.7019589599999998
+          },
+          "after_opponent_reply": {
+            "mover_winrate_gap": 0.07763607900000002,
+            "mover_score_gap": 2.2586718300000004
+          },
+          "gap_change_after_replies": {
+            "mover_winrate_gap_change": -0.012470053999999897,
+            "mover_score_gap_change": 0.5567128700000006
+          },
+          "actual_reply_vs_recommendation": {
+            "usable": true,
+            "unusable_reason": null,
+            "same_region": false,
+            "manhattan_distance": 24,
+            "chebyshev_distance": 14,
+            "locality": "far"
+          }
+        },
+        "reliability": {
+          "usable": true,
+          "branch_depth_equal": true,
+          "side_to_move_comparable": true,
+          "visit_budget_equal": true,
+          "stability_assessed": false,
+          "reasons": []
+        },
+        "limitations": [
+          "single_search_stability_not_measured"
+        ]
+      }
+    },
+    {
+      "case": {
+        "id": "park-an-176",
+        "sgf": "棋譜/[朴廷桓]vs[安成浚]1765452105010001779.sgf",
+        "move_number": 176,
+        "recommended_move": "B14",
+        "expected_case_type": "ambiguous",
+        "selection_note": "Far move choice with reliable candidates but only a very small objective loss."
+      },
+      "phase3a": null,
+      "actual_candidate_quality": null,
+      "experiment": {
+        "visits": 200,
+        "query_count": 2,
+        "base_query_runtime_seconds": null,
+        "branch_runtime_seconds": {
+          "recommended_branch": 4.467320291791111,
+          "actual_branch": 4.545133499894291
+        },
+        "total_runtime_seconds": 9.012453791685402,
+        "warm_process": true,
+        "include_ownership": false,
+        "focus_moves_used": false
+      },
+      "counterfactual_evidence": {
+        "schema_version": 1,
+        "value_perspective": {
+          "raw": "black",
+          "normalized": "original_player",
+          "original_player": "W"
+        },
+        "base": {
+          "move_count": 175,
+          "side_to_move": "W",
+          "recommended_move": "B14",
+          "actual_move": "C6",
+          "board_size": 19,
+          "requested_visits_per_branch": 200
+        },
+        "recommended_branch": {
+          "name": "recommended_branch",
+          "first_move": "B14",
+          "first_player": "W",
+          "base_move_count": 175,
+          "after_first_move_count": 176,
+          "after_reply_move_count": 177,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.916827775,
+            "black_score_lead": 4.51569621,
+            "mover_winrate": 0.08317222499999999,
+            "mover_score_lead": -4.51569621,
+            "visits": 215
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "E9",
+            "visits": 65,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "E9",
+              "F9",
+              "E10",
+              "D11",
+              "F10",
+              "G10",
+              "G9",
+              "F8"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.9200213,
+              "black_score_lead": 5.42186165,
+              "mover_winrate": 0.07997869999999996,
+              "mover_score_lead": -5.42186165
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "actual_branch": {
+          "name": "actual_branch",
+          "first_move": "C6",
+          "first_player": "W",
+          "base_move_count": 175,
+          "after_first_move_count": 176,
+          "after_reply_move_count": 177,
+          "requested_visits": 200,
+          "side_to_move_after_first": "B",
+          "side_to_move_after_reply": "W",
+          "evaluation_after_first": {
+            "raw_perspective": "black",
+            "black_winrate": 0.927493168,
+            "black_score_lead": 2.62315712,
+            "mover_winrate": 0.07250683199999997,
+            "mover_score_lead": -2.62315712,
+            "visits": 215
+          },
+          "opponent_reply": {
+            "player": "B",
+            "move": "D6",
+            "visits": 63,
+            "minimum_reliable_visits": 10,
+            "pv": [
+              "D6",
+              "A5",
+              "B9",
+              "G9",
+              "F11",
+              "F12",
+              "G11"
+            ],
+            "evaluation_after_reply": {
+              "raw_perspective": "black",
+              "black_winrate": 0.93116033,
+              "black_score_lead": 2.78808998,
+              "mover_winrate": 0.06883967000000002,
+              "mover_score_lead": -2.78808998
+            }
+          },
+          "reliability": {
+            "usable": true,
+            "root_visits_sufficient": true,
+            "reply_visits_sufficient": true,
+            "turn_number_correct": true,
+            "side_to_move_correct": true,
+            "reply_location_usable": true,
+            "reasons": []
+          }
+        },
+        "comparison": {
+          "usable": true,
+          "positive_gap_means": "recommended_branch_better_for_original_player",
+          "after_first_move": {
+            "mover_winrate_gap": 0.010665393000000023,
+            "mover_score_gap": -1.8925390899999996
+          },
+          "after_opponent_reply": {
+            "mover_winrate_gap": 0.011139029999999939,
+            "mover_score_gap": -2.6337716700000002
+          },
+          "gap_change_after_replies": {
+            "mover_winrate_gap_change": 0.0004736369999999157,
+            "mover_score_gap_change": -0.7412325800000006
+          },
+          "actual_reply_vs_recommendation": {
+            "usable": true,
+            "unusable_reason": null,
+            "same_region": false,
+            "manhattan_distance": 10,
+            "chebyshev_distance": 8,
+            "locality": "far"
+          }
+        },
+        "reliability": {
+          "usable": true,
+          "branch_depth_equal": true,
+          "side_to_move_comparable": true,
+          "visit_budget_equal": true,
+          "stability_assessed": false,
+          "reasons": []
+        },
+        "limitations": [
+          "single_search_stability_not_measured"
+        ]
+      }
+    }
+  ]
+}

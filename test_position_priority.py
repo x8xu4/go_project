@@ -216,6 +216,28 @@ class PositionPriorityTests(unittest.TestCase):
         self.assertEqual(fake.turn_batches[1], [1, 2])
         self.assertEqual(set(job.position_results), {0, 1, 2})
         self.assertEqual(job.completed_moves, 2)
+        for existing_field in (
+            "winrates",
+            "scores",
+            "move_analyses",
+            "important_moves",
+            "blunders",
+            "importance_counts",
+            "thresholds",
+            "move_count",
+            "eta_history",
+        ):
+            self.assertIn(existing_field, job.result)
+        self.assertIn("game_review", job.result)
+        self.assertEqual(job.result["game_review"]["schema_version"], 1)
+        self.assertEqual(
+            job.result["game_review"]["summary"]["selected_count"], 0
+        )
+        self.assertIn("review_summary", job.result["game_review"])
+        self.assertEqual(
+            job.result["game_review"]["review_summary"]["schema_version"],
+            1,
+        )
 
 
 if __name__ == "__main__":

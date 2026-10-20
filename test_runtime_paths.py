@@ -1,7 +1,9 @@
+from contextlib import nullcontext
 import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 from runtime_paths import (
     RuntimePathError,
@@ -29,10 +31,15 @@ def make_resources(root: Path, *, nested: bool = False) -> Path:
     return root
 
 
-def make_executable(path: Path) -> Path:
+def make_executable(path: Path, *, platform: str) -> Path:
+    if platform == "windows" and path.suffix.lower() != ".exe":
+        path = path.with_name(f"{path.name}.exe")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
-    path.chmod(0o755)
+    path.write_bytes(
+        b"MZ test executable" if platform == "windows" else b"test executable"
+    )
+    if platform != "windows" and os.name != "nt":
+        path.chmod(0o755)
     return path
 
 
@@ -42,13 +49,17 @@ class RuntimePathTests(unittest.TestCase):
             base = Path(directory)
             explicit = make_resources(base / "explicit")
             environment = make_resources(base / "environment")
-            katago = make_executable(base / "katago")
+            katago = make_executable(base / "katago", platform="windows")
             paths = resolve_runtime_paths(
                 resource_root=explicit,
                 katago_executable=katago,
-                environ={"LOGOSGO_RESOURCE_ROOT": str(environment)},
+                environ={
+                    "LOGOSGO_RESOURCE_ROOT": str(environment),
+                    "LOCALAPPDATA": str(base / "local"),
+                },
                 home=base / "home",
                 temporary_root=base / "tmp",
+                platform="windows",
             )
             self.assertEqual(paths.resource_root, explicit.resolve())
             self.assertEqual(paths.mode, "explicit")
@@ -59,7 +70,7 @@ class RuntimePathTests(unittest.TestCase):
             source_root = make_resources(base / "source")
             source_file = source_root / "runtime_paths.py"
             source_file.write_text("# fixture\n", encoding="utf-8")
-            katago = make_executable(base / "bin/katago")
+            katago = make_executable(base / "bin/katago", platform="windows")
             unrelated = base / "unrelated"
             unrelated.mkdir()
             previous = Path.cwd()
@@ -67,9 +78,10 @@ class RuntimePathTests(unittest.TestCase):
                 os.chdir(unrelated)
                 paths = resolve_runtime_paths(
                     source_file=source_file,
-                    environ={},
-                    which=lambda name: str(katago) if name == "katago" else None,
+                    environ={"LOCALAPPDATA": str(base / "local")},
+                    which=lambda name: str(katago) if name == "katago.exe" else None,
                     home=base / "home",
+                    platform="windows",
                 )
             finally:
                 os.chdir(previous)
@@ -80,11 +92,15 @@ class RuntimePathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             root = make_resources(base / "resources", nested=True)
-            katago = make_executable(root / "KataGo/katago")
+            katago = make_executable(
+                root / "KataGo/katago",
+                platform="windows",
+            )
             paths = resolve_runtime_paths(
                 resource_root=root,
-                environ={},
+                environ={"LOCALAPPDATA": str(base / "local")},
                 home=base / "home",
+                platform="windows",
             )
             self.assertEqual(paths.model_file, (root / "model/model.bin.gz").resolve())
             self.assertEqual(paths.config_file, (root / "config/analysis.cfg").resolve())
@@ -98,19 +114,28 @@ class RuntimePathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             root = make_resources(base / "resources")
-            katago = make_executable(base / "helpers/katago")
+            katago = make_executable(
+                base / "helpers/katago",
+                platform="windows",
+            )
             paths = resolve_runtime_paths(
                 resource_root=root,
                 katago_executable=katago,
-                environ={},
+                environ={"LOCALAPPDATA": str(base / "local")},
                 which=lambda name: self.fail("PATH lookup must not run"),
+                platform="windows",
             )
             self.assertEqual(paths.katago_executable, katago.resolve())
 
     def test_writable_locations_are_outside_resource_root(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
-            paths = writable_paths(home=base / "home", temporary_root=base / "tmp")
+            paths = writable_paths(
+                home=base / "home",
+                temporary_root=base / "tmp",
+                platform="macos",
+                environ={},
+            )
             self.assertEqual(
                 paths.application_support,
                 base / "home/Library/Application Support/LogosGo",
@@ -196,13 +221,29 @@ class RuntimePathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             app = Path(directory) / "LogosGo.app/Contents"
             resources = make_resources(app / "Resources/LogosGo")
-            katago = make_executable(app / "Helpers/KataGo/katago")
-            backend = make_executable(app / "Helpers/LogosGoBackend/backend")
-            paths = resolve_runtime_paths(
-                executable_path=backend,
-                frozen=True,
-                environ={},
+            katago = make_executable(
+                app / "Helpers/KataGo/katago",
+                platform="macos",
             )
+            backend = make_executable(
+                app / "Helpers/LogosGoBackend/backend",
+                platform="macos",
+            )
+            # This test validates the macOS bundle layout even on Windows.
+            # Windows cannot represent POSIX execute bits, so isolate that OS
+            # primitive while retaining all path/discovery assertions.
+            executable_access = (
+                mock.patch("runtime_paths.os.access", return_value=True)
+                if os.name == "nt"
+                else nullcontext()
+            )
+            with executable_access:
+                paths = resolve_runtime_paths(
+                    executable_path=backend,
+                    frozen=True,
+                    environ={},
+                    platform="macos",
+                )
             self.assertEqual(paths.mode, "packaged")
             self.assertEqual(paths.resource_root, resources.resolve())
             self.assertEqual(paths.katago_executable, katago.resolve())
@@ -229,12 +270,13 @@ class RuntimePathTests(unittest.TestCase):
             base = Path(directory)
             root = make_resources(base / "resources")
             (root / "analysis.cfg").unlink()
-            katago = make_executable(base / "katago")
+            katago = make_executable(base / "katago", platform="windows")
             with self.assertRaisesRegex(RuntimePathError, "analysis.cfg"):
                 resolve_runtime_paths(
                     resource_root=root,
                     katago_executable=katago,
-                    environ={},
+                    environ={"LOCALAPPDATA": str(base / "local")},
+                    platform="windows",
                 )
 
     def test_missing_katago_is_actionable(self):

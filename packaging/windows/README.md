@@ -79,12 +79,14 @@ stage either Windows binary.
 
 ## Windows Runner contract for Phase 7C
 
-The existing Flutter Windows Runner is still the default template. Native
-implementation must:
+The Flutter Windows Runner now contains the Phase 7C lifecycle source in
+`windows/runner/backend_manager.{h,cpp}` and exposes the existing Dart channel
+from `flutter_window.cpp`. It was authored on macOS and still requires an
+actual MSVC/Flutter Windows build and runtime validation. The implementation:
 
 1. use wide-character Win32 paths and `CreateProcessW`;
 2. allocate `127.0.0.1:0` and retry a bounded launch race;
-3. generate a random URL-safe token and place it in the child environment;
+3. generate a random URL-safe token and pass it with `--instance-token`;
 4. launch the selected backend/runtime with explicit absolute paths;
 5. assign the backend to a Job Object with kill-on-close before it can spawn
    descendants;

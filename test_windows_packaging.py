@@ -8,12 +8,93 @@ WINDOWS_RUNNER = PROJECT_ROOT / "flutter_application_1/windows/runner"
 
 
 class WindowsPackagingPreparationTests(unittest.TestCase):
-    def test_windows_runner_exists_but_lifecycle_channel_is_not_yet_implemented(self):
-        self.assertTrue((WINDOWS_RUNNER / "main.cpp").is_file())
-        self.assertTrue((WINDOWS_RUNNER / "flutter_window.cpp").is_file())
-        text = (WINDOWS_RUNNER / "flutter_window.cpp").read_text(encoding="utf-8")
-        self.assertNotIn("logosgo/backend", text)
-        self.assertNotIn("getBackendConfiguration", text)
+    def test_windows_runner_implements_backend_lifecycle_channel(self):
+        manager = (WINDOWS_RUNNER / "backend_manager.cpp").read_text(
+            encoding="utf-8"
+        )
+        window = (WINDOWS_RUNNER / "flutter_window.cpp").read_text(
+            encoding="utf-8"
+        )
+        main = (WINDOWS_RUNNER / "main.cpp").read_text(encoding="utf-8")
+
+        self.assertIn("BackendManager backend_manager", main)
+        self.assertIn("backend_manager.Stop()", main)
+        self.assertIn('"logosgo/backend"', window)
+        self.assertIn('"getBackendConfiguration"', window)
+        self.assertIn('"instanceToken"', window)
+        self.assertIn("BACKEND_STARTUP_FAILED", window)
+        self.assertIn("CreateProcessW", manager)
+        self.assertIn("JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE", manager)
+        self.assertIn("BCryptGenRandom", manager)
+        self.assertIn("BCRYPT_SHA256_ALGORITHM", manager)
+        self.assertIn("AssignProcessToJobObject", manager)
+        self.assertIn("TerminateJobObject", manager)
+        self.assertIn("SetHandleInformation", manager)
+        self.assertIn("ERROR_INSUFFICIENT_BUFFER", manager)
+
+    def test_windows_runner_uses_dynamic_port_and_authenticated_health(self):
+        manager = (WINDOWS_RUNNER / "backend_manager.cpp").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("address.sin_port = 0", manager)
+        self.assertIn('L"/health"', manager)
+        self.assertIn('L"/shutdown"', manager)
+        self.assertIn('L"X-LogosGo-Instance"', manager)
+        for field in (
+            '"service"',
+            '"api_schema_version"',
+            '"ready"',
+            '"token_verified"',
+            '"instance_id"',
+        ):
+            with self.subTest(field=field):
+                self.assertIn(field, manager)
+        self.assertNotIn("localhost:5001", manager)
+        self.assertIn(
+            "received_instance_id == configuration_.instance_id", manager
+        )
+
+    def test_windows_runner_passes_the_complete_packaged_backend_contract(self):
+        manager = (WINDOWS_RUNNER / "backend_manager.cpp").read_text(
+            encoding="utf-8"
+        )
+        for argument in (
+            'L"--port"',
+            'L"--instance-token"',
+            'L"--resource-root"',
+            'L"--katago-executable"',
+            'L"--parent-pid"',
+        ):
+            with self.subTest(argument=argument):
+                self.assertIn(argument, manager)
+        self.assertIn('executable_directory / L"runtime"', manager)
+        self.assertIn('L"LogosGo" / L"Logs"', manager)
+        self.assertIn("CREATE_NEW", manager)
+
+    def test_windows_runner_probes_opencl_before_non_avx2_eigen(self):
+        manager = (WINDOWS_RUNNER / "backend_manager.cpp").read_text(
+            encoding="utf-8"
+        )
+        selection = manager[manager.index("bool BackendManager::SelectKataGo") :]
+        self.assertLess(
+            selection.index("layout.opencl_executable"),
+            selection.index("layout.eigen_executable"),
+        )
+        self.assertIn("kKataGoReadyMarker", manager)
+        self.assertIn("layout.model_file.wstring()", manager)
+        self.assertIn("layout.config_file.wstring()", manager)
+        self.assertNotIn("eigenavx2", manager.lower())
+
+    def test_windows_runner_cmake_includes_native_dependencies(self):
+        text = (WINDOWS_RUNNER / "CMakeLists.txt").read_text(encoding="utf-8")
+        for requirement in (
+            '"backend_manager.cpp"',
+            '"bcrypt.lib"',
+            '"winhttp.lib"',
+            '"ws2_32.lib"',
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, text)
 
     def test_windows_spec_is_onedir_and_has_no_macos_or_large_runtime_assets(self):
         text = (PACKAGING_ROOT / "backend.spec").read_text(encoding="utf-8")
@@ -47,7 +128,7 @@ class WindowsPackagingPreparationTests(unittest.TestCase):
 
     def test_build_script_refuses_non_windows_and_uses_isolated_outputs(self):
         text = (PACKAGING_ROOT / "build_backend.ps1").read_text(encoding="utf-8")
-        self.assertIn("if (-not $IsWindows)", text)
+        self.assertIn('$env:OS -ne "Windows_NT"', text)
         self.assertIn("packaging/windows/requirements-build.txt", text)
         self.assertIn('Join-Path $ScriptDirectory "build"', text)
         self.assertIn('Join-Path $ScriptDirectory "dist"', text)

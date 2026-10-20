@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-if (-not $IsWindows) {
+if ($env:OS -ne "Windows_NT") {
     throw "LogosGo Windows backend must be built natively on Windows."
 }
 if (-not [Environment]::Is64BitOperatingSystem) {

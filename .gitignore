@@ -28,3 +28,6 @@ __pycache__/
 /圖六.png
 /圖七.png
 /圖八.png
+
+# Local Python virtual environments
+/.venv/
